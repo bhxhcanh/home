@@ -201,6 +201,12 @@
     font-weight: 600;
 }
 
+.hinhanh-app-wrapper .status-text {
+    font-size: 0.9rem;
+    color: var(--text-secondary-color);
+    line-height: 1.4;
+    margin-top: 1rem;
+}
 
 /* --- Crop Specific --- */
 .hinhanh-app-wrapper .crop-inputs {
