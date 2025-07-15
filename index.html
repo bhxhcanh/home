@@ -9,7 +9,6 @@
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="qrcode/style.css">
   <link rel="stylesheet" href="hinhanh/style.css">
-<link rel="stylesheet" href="/index.css">
 </head>
 <body>
 
@@ -258,15 +257,26 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
                     <span>Click to upload or drag & drop</span>
                   </label>
-                  <input type="file" id="upload-input" accept="image/*" />
+                  <input type="file" id="upload-input" accept="image/*,.heic,.heif" />
                 </div>
                 <div id="editor" class="editor-section hidden">
                   <div class="canvas-container"><canvas id="canvas"></canvas></div>
                   <aside class="controls-panel">
                     <div class="controls-main">
-                      <nav class="tabs"><button class="tab-btn active" data-tab="resize">Resize</button><button class="tab-btn" data-tab="crop">Crop</button><button class="tab-btn" data-tab="export">Export</button></nav>
+                      <nav class="tabs">
+                        <button class="tab-btn active" data-tab="resize">Resize</button>
+                        <button class="tab-btn" data-tab="crop">Crop</button>
+                        <button class="tab-btn" data-tab="remove-bg">Xóa nền</button>
+                        <button class="tab-btn" data-tab="export">Export</button>
+                      </nav>
                       <div id="resize-controls" class="tab-content active"><h3>Resize Image</h3><div class="control-group"><label for="width-input">Width:</label><input type="number" id="width-input" min="1" /></div><div class="control-group"><label for="height-input">Height:</label><input type="number" id="height-input" min="1" /></div><div class="control-group checkbox-group"><input type="checkbox" id="aspect-ratio-lock" checked><label for="aspect-ratio-lock">Lock Aspect Ratio</label></div><button id="apply-resize-btn" class="action-btn">Apply Resize</button></div>
-                      <div id="crop-controls" class="tab-content"><h3>Crop Image</h3><p class="instructions">Click and drag on the image, or enter precise values below.</p><div class="crop-inputs"><div class="control-group"><label for="crop-x">X:</label><input type="number" id="crop-x" /></div><div class="control-group"><label for="crop-y">Y:</label><input type="number" id="crop-y" /></div><div class="control-group"><label for="crop-width">Width:</label><input type="number" id="crop-width" /></div><div class="control-group"><label for="crop-height">Height:</label><input type="number" id="crop-height" /></div></div><button id="apply-crop-btn" class="action-btn" disabled>Apply Crop</button></div>
+                      <div id="crop-controls" class="tab-content"><h3>Crop Image</h3><p class="instructions">Nhấp và kéo trên ảnh để chọn vùng cắt, hoặc nhập giá trị chính xác ở dưới.</p><div class="crop-inputs"><div class="control-group"><label for="crop-x">X:</label><input type="number" id="crop-x" /></div><div class="control-group"><label for="crop-y">Y:</label><input type="number" id="crop-y" /></div><div class="control-group"><label for="crop-width">Width:</label><input type="number" id="crop-width" /></div><div class="control-group"><label for="crop-height">Height:</label><input type="number" id="crop-height" /></div></div><button id="apply-crop-btn" class="action-btn" disabled>Apply Crop</button></div>
+                      <div id="remove-bg-controls" class="tab-content">
+                        <h3>Xóa nền</h3>
+                        <p class="instructions">Công cụ sẽ tự động xóa nền và giữ lại chủ thể chính. Quá trình này có thể mất một vài giây.</p>
+                        <button id="apply-remove-bg-btn" class="action-btn" disabled>Bắt đầu Xóa Nền</button>
+                        <div id="remove-bg-status" class="status-text" style="display: none;"></div>
+                      </div>
                       <div id="export-controls" class="tab-content"><h3>Export Image</h3><div class="control-group"><label for="format-select">Format:</label><select id="format-select"><option value="image/png">PNG</option><option value="image/jpeg">JPEG</option><option value="image/webp">WebP</option></select></div><div class="control-group" id="quality-control"><label for="quality-slider">Quality: <span id="quality-value">0.9</span></label><input type="range" id="quality-slider" min="0.1" max="1" step="0.05" value="0.9" /></div><div class="control-group"><p class="file-size-info">Estimated Size: <strong id="estimated-size">...</strong></p></div><button id="download-btn" class="action-btn">Download Image</button></div>
                     </div>
                     <div class="controls-footer"><div class="history-buttons"><button id="undo-btn" class="secondary-btn" disabled>Undo</button><button id="redo-btn" class="secondary-btn" disabled>Redo</button></div><button id="reset-btn" class="reset-btn">Reset & Upload New</button></div>
@@ -281,6 +291,9 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/heic2any/dist/heic2any.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.13.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/body-pix@2.2.0/dist/body-pix.min.js"></script>
   <script src="qrcode/script.js"></script>
   <script src="hinhanh/script.js"></script>
   <script>
@@ -599,6 +612,5 @@
     });
 
   </script>
-<script type="module" src="/index.tsx"></script>
 </body>
 </html>
