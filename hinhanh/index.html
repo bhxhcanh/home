@@ -19,7 +19,7 @@
           <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
           <span>Click to upload or drag & drop</span>
         </label>
-        <input type="file" id="upload-input" accept="image/*" />
+        <input type="file" id="upload-input" accept="image/*,.heic,.heif" />
       </div>
 
       <div id="editor" class="editor-section hidden">
@@ -31,6 +31,7 @@
             <nav class="tabs">
               <button class="tab-btn active" data-tab="resize">Resize</button>
               <button class="tab-btn" data-tab="crop">Crop</button>
+              <button class="tab-btn" data-tab="remove-bg">Xóa nền</button>
               <button class="tab-btn" data-tab="export">Export</button>
             </nav>
 
@@ -53,7 +54,7 @@
 
             <div id="crop-controls" class="tab-content">
               <h3>Crop Image</h3>
-              <p class="instructions">Click and drag on the image, or enter precise values below.</p>
+              <p class="instructions">Nhấp và kéo trên ảnh để chọn vùng cắt, hoặc nhập giá trị chính xác ở dưới.</p>
               <div class="crop-inputs">
                 <div class="control-group">
                   <label for="crop-x">X:</label>
@@ -73,6 +74,13 @@
                 </div>
               </div>
               <button id="apply-crop-btn" class="action-btn" disabled>Apply Crop</button>
+            </div>
+
+            <div id="remove-bg-controls" class="tab-content">
+              <h3>Xóa nền</h3>
+              <p class="instructions">Công cụ sẽ tự động xóa nền và giữ lại chủ thể chính. Quá trình này có thể mất một vài giây.</p>
+              <button id="apply-remove-bg-btn" class="action-btn" disabled>Bắt đầu Xóa Nền</button>
+              <div id="remove-bg-status" class="status-text" style="display: none;"></div>
             </div>
 
             <div id="export-controls" class="tab-content">
@@ -107,6 +115,9 @@
       </div>
     </main>
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/heic2any/dist/heic2any.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.13.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/body-pix@2.2.0/dist/body-pix.min.js"></script>
   <script src="script.js"></script>
 <script type="module" src="/index.tsx"></script>
 </body>
