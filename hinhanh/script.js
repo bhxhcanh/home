@@ -24,6 +24,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const cropHeightInput = document.getElementById('crop-height');
     const cropInputs = [cropXInput, cropYInput, cropWidthInput, cropHeightInput];
 
+    // Remove BG controls
+    const applyRemoveBgBtn = document.getElementById('apply-remove-bg-btn');
+    const removeBgStatus = document.getElementById('remove-bg-status');
+
     // Export controls
     const formatSelect = document.getElementById('format-select');
     const qualityControl = document.getElementById('quality-control');
@@ -44,6 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let isCropping = false;
     let isDragging = false;
     let cropRect = { startX: 0, startY: 0, width: 0, height: 0 };
+    let bodyPixModel = null;
     
     // History State
     let historyStack = [];
@@ -63,18 +68,52 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- UPLOAD & INITIALIZATION ---
 
     const handleImageUpload = (file) => {
-        if (!file || !file.type.startsWith('image/')) {
-            alert('Please select a valid image file.');
+        if (!file) {
+            alert('Vui lòng chọn một tệp.');
             return;
         }
+
+        const fileName = file.name.toLowerCase();
+        const isHeic = fileName.endsWith('.heic') || fileName.endsWith('.heif');
+
+        if (isHeic) {
+            if (typeof heic2any === 'undefined') {
+                alert('Thư viện chuyển đổi HEIC chưa sẵn sàng. Vui lòng thử lại.');
+                return;
+            }
+            // Show status for conversion
+            uploadLabel.querySelector('span').textContent = 'Đang chuyển đổi ảnh HEIC...';
+            heic2any({
+                blob: file,
+                toType: "image/png",
+                quality: 0.9,
+            })
+            .then(conversionResult => {
+                processImageFile(conversionResult);
+                uploadLabel.querySelector('span').textContent = 'Click to upload or drag & drop';
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Đã xảy ra lỗi khi chuyển đổi tệp HEIC. Tệp có thể bị hỏng hoặc không được hỗ trợ.');
+                uploadLabel.querySelector('span').textContent = 'Click to upload or drag & drop';
+            });
+            return;
+        }
+
+        if (!file.type.startsWith('image/')) {
+            alert('Vui lòng chọn một tệp hình ảnh hợp lệ.');
+            return;
+        }
+        processImageFile(file);
+    };
+
+    const processImageFile = (file) => {
         const reader = new FileReader();
         reader.onload = (e) => {
             originalImage.src = e.target.result;
             originalImage.onload = () => {
                 editedImage.src = originalImage.src;
-                editedImage.onload = () => {
-                    setupEditor();
-                }
+                editedImage.onload = setupEditor;
             };
         };
         reader.readAsDataURL(file);
@@ -144,6 +183,8 @@ document.addEventListener('DOMContentLoaded', () => {
     applyCropBtn.addEventListener('click', applyCrop);
     cropInputs.forEach(input => input.addEventListener('input', handleCropInputChange));
     
+    applyRemoveBgBtn.addEventListener('click', applyRemoveBackground);
+
     formatSelect.addEventListener('change', () => {
         toggleQualitySlider();
         updateEstimatedSize();
@@ -211,6 +252,11 @@ document.addEventListener('DOMContentLoaded', () => {
         isCropping = activeTab === 'crop';
         tabs.forEach(tab => tab.classList.toggle('active', tab.dataset.tab === activeTab));
         tabContents.forEach(content => content.classList.toggle('active', content.id === `${activeTab}-controls`));
+        
+        if (activeTab === 'remove-bg' && !bodyPixModel) {
+            loadBodyPixModel();
+        }
+
         redrawCanvasWithOverlay(); 
     }
 
@@ -350,6 +396,87 @@ document.addEventListener('DOMContentLoaded', () => {
         editedImage.src = tempCanvas.toDataURL();
         editedImage.onload = handleImageStateChange;
     }
+
+    // --- REMOVE BACKGROUND LOGIC ---
+
+    async function loadBodyPixModel() {
+        if (bodyPixModel || typeof bodyPix === 'undefined') return;
+        try {
+            applyRemoveBgBtn.disabled = true;
+            removeBgStatus.textContent = 'Đang tải mô hình AI, vui lòng chờ...';
+            removeBgStatus.style.display = 'block';
+
+            bodyPixModel = await bodyPix.load({
+                architecture: 'MobileNetV1',
+                outputStride: 16,
+                multiplier: 0.75,
+                quantBytes: 2
+            });
+            
+            removeBgStatus.textContent = 'Mô hình AI đã sẵn sàng. Nhấn nút để bắt đầu.';
+            applyRemoveBgBtn.disabled = false;
+            
+        } catch (error) {
+            console.error("Lỗi tải mô hình BodyPix:", error);
+            removeBgStatus.textContent = 'Lỗi khi tải mô hình AI. Vui lòng làm mới trang và thử lại.';
+            applyRemoveBgBtn.disabled = true;
+        }
+    }
+
+    async function applyRemoveBackground() {
+        if (!bodyPixModel) {
+            alert("Mô hình AI chưa được tải xong. Vui lòng chờ.");
+            return;
+        }
+
+        try {
+            applyRemoveBgBtn.disabled = true;
+            removeBgStatus.textContent = 'Đang phân tích và xóa nền...';
+
+            const segmentation = await bodyPixModel.segmentPerson(editedImage, {
+                flipHorizontal: false,
+                internalResolution: 'medium',
+                segmentationThreshold: 0.6
+            });
+
+            if (!segmentation || segmentation.data.every(p => p === -1)) {
+                alert('Không thể nhận diện được chủ thể trong ảnh. Vui lòng thử với ảnh khác rõ hơn.');
+                removeBgStatus.textContent = 'Mô hình AI đã sẵn sàng.';
+                applyRemoveBgBtn.disabled = false;
+                return;
+            }
+
+            const mask = bodyPix.toMask(segmentation);
+
+            saveState();
+
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCanvas.width = mask.width;
+            tempCanvas.height = mask.height;
+
+            // Draw the mask
+            tempCtx.putImageData(mask, 0, 0);
+            
+            // Use the mask to clip the original image
+            tempCtx.globalCompositeOperation = 'source-in';
+            tempCtx.drawImage(editedImage, 0, 0, mask.width, mask.height);
+            
+            editedImage.src = tempCanvas.toDataURL('image/png'); // Always use PNG for transparency
+            editedImage.onload = () => {
+                 handleImageStateChange();
+                 removeBgStatus.textContent = 'Xóa nền thành công! Bạn có thể xuất ảnh ở tab Export.';
+                 applyRemoveBgBtn.disabled = false;
+            };
+            
+        } catch(error) {
+            console.error("Lỗi khi xóa nền:", error);
+            alert("Đã xảy ra lỗi trong quá trình xóa nền. Vui lòng thử lại.");
+            removeBgStatus.textContent = 'Đã xảy ra lỗi. Mô hình AI đã sẵn sàng.';
+            applyRemoveBgBtn.disabled = false;
+        }
+    }
+
 
     // --- EXPORT LOGIC ---
     
