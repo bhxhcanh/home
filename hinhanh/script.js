@@ -23,10 +23,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const cropWidthInput = document.getElementById('crop-width');
     const cropHeightInput = document.getElementById('crop-height');
     const cropInputs = [cropXInput, cropYInput, cropWidthInput, cropHeightInput];
+    const aspectBtns = document.querySelectorAll('.aspect-btn');
 
-    // Remove BG controls
-    const applyRemoveBgBtn = document.getElementById('apply-remove-bg-btn');
-    const removeBgStatus = document.getElementById('remove-bg-status');
+    // Rotate controls
+    const rotateLeftBtn = document.getElementById('rotate-left-btn');
+    const rotateRightBtn = document.getElementById('rotate-right-btn');
+    
+    // Censor (Pixelate) controls
+    const applyCensorBtn = document.getElementById('apply-censor-btn');
+    const pixelateSlider = document.getElementById('pixelate-intensity-slider');
+    const pixelateValue = document.getElementById('pixelate-value');
 
     // Export controls
     const formatSelect = document.getElementById('format-select');
@@ -45,10 +51,12 @@ document.addEventListener('DOMContentLoaded', () => {
     let originalImage = new Image();
     let editedImage = new Image();
     let originalAspectRatio = 1;
-    let isCropping = false;
+
+    // Tool State
+    let activeTool = 'none'; // 'crop', 'censor'
     let isDragging = false;
-    let cropRect = { startX: 0, startY: 0, width: 0, height: 0 };
-    let bodyPixModel = null;
+    let selectionRect = { startX: 0, startY: 0, width: 0, height: 0, x: 0, y: 0, w: 0, h: 0 };
+    let cropAspectRatio = 'free';
     
     // History State
     let historyStack = [];
@@ -81,7 +89,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('Thư viện chuyển đổi HEIC chưa sẵn sàng. Vui lòng thử lại.');
                 return;
             }
-            // Show status for conversion
             uploadLabel.querySelector('span').textContent = 'Đang chuyển đổi ảnh HEIC...';
             heic2any({
                 blob: file,
@@ -90,12 +97,12 @@ document.addEventListener('DOMContentLoaded', () => {
             })
             .then(conversionResult => {
                 processImageFile(conversionResult);
-                uploadLabel.querySelector('span').textContent = 'Click to upload or drag & drop';
+                uploadLabel.querySelector('span').textContent = 'Nhấp để tải lên hoặc kéo & thả';
             })
             .catch(err => {
                 console.error(err);
                 alert('Đã xảy ra lỗi khi chuyển đổi tệp HEIC. Tệp có thể bị hỏng hoặc không được hỗ trợ.');
-                uploadLabel.querySelector('span').textContent = 'Click to upload or drag & drop';
+                uploadLabel.querySelector('span').textContent = 'Nhấp để tải lên hoặc kéo & thả';
             });
             return;
         }
@@ -147,10 +154,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const resetEditor = () => {
         uploaderSection.classList.remove('hidden');
         editorSection.classList.add('hidden');
-        uploadInput.value = ''; // Clear file input
+        uploadInput.value = '';
         originalImage = new Image();
         editedImage = new Image();
-        isCropping = false;
+        activeTool = 'none';
         historyStack = [];
         redoStack = [];
     };
@@ -175,15 +182,25 @@ document.addEventListener('DOMContentLoaded', () => {
     widthInput.addEventListener('input', () => handleDimensionChange('width'));
     heightInput.addEventListener('input', () => handleDimensionChange('height'));
     applyResizeBtn.addEventListener('click', applyResize);
-
-    canvas.addEventListener('mousedown', startCrop);
-    canvas.addEventListener('mousemove', dragCrop);
-    canvas.addEventListener('mouseup', endCrop);
-    canvas.addEventListener('mouseleave', endCrop);
+    
+    aspectBtns.forEach(btn => btn.addEventListener('click', (e) => {
+        aspectBtns.forEach(b => b.classList.remove('active'));
+        e.currentTarget.classList.add('active');
+        cropAspectRatio = e.currentTarget.dataset.ratio;
+    }));
+    
+    canvas.addEventListener('mousedown', startSelection);
+    canvas.addEventListener('mousemove', dragSelection);
+    canvas.addEventListener('mouseup', endSelection);
+    canvas.addEventListener('mouseleave', endSelection);
     applyCropBtn.addEventListener('click', applyCrop);
     cropInputs.forEach(input => input.addEventListener('input', handleCropInputChange));
     
-    applyRemoveBgBtn.addEventListener('click', applyRemoveBackground);
+    rotateLeftBtn.addEventListener('click', () => rotateImage(-90));
+    rotateRightBtn.addEventListener('click', () => rotateImage(90));
+
+    pixelateSlider.addEventListener('input', () => pixelateValue.textContent = pixelateSlider.value);
+    applyCensorBtn.addEventListener('click', applyPixelate);
 
     formatSelect.addEventListener('change', () => {
         toggleQualitySlider();
@@ -203,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- HISTORY (UNDO/REDO) LOGIC ---
     
     function saveState() {
-        redoStack = []; // Clear redo stack on new action
+        redoStack = [];
         historyStack.push(editedImage.src);
         updateUndoRedoButtons();
     }
@@ -239,26 +256,35 @@ document.addEventListener('DOMContentLoaded', () => {
         originalAspectRatio = editedImage.width / editedImage.height;
         updateCanvas(editedImage);
         updateResizeInputs();
-        cropRect = { startX: 0, startY: 0, width: 0, height: 0 };
-        applyCropBtn.disabled = true;
-        updateCropInputs();
-        redrawCanvasWithOverlay();
+        resetSelection();
         updateEstimatedSize();
     }
 
     // --- TAB LOGIC ---
 
-    function activateTab(activeTab) {
-        isCropping = activeTab === 'crop';
-        tabs.forEach(tab => tab.classList.toggle('active', tab.dataset.tab === activeTab));
-        tabContents.forEach(content => content.classList.toggle('active', content.id === `${activeTab}-controls`));
-        
-        if (activeTab === 'remove-bg' && !bodyPixModel) {
-            loadBodyPixModel();
-        }
+    function activateTab(tabName) {
+        activeTool = ['crop', 'censor'].includes(tabName) ? tabName : 'none';
 
+        tabs.forEach(tab => tab.classList.toggle('active', tab.dataset.tab === tabName));
+        tabContents.forEach(content => content.classList.toggle('active', content.id === `${tabName}-controls`));
+        
+        canvas.classList.remove('cropping-cursor', 'censoring-cursor');
+        if (activeTool === 'crop') canvas.classList.add('cropping-cursor');
+        if (activeTool === 'censor') canvas.classList.add('censoring-cursor');
+
+        resetSelection();
         redrawCanvasWithOverlay(); 
     }
+    
+    function resetSelection() {
+        isDragging = false;
+        selectionRect = { startX: 0, startY: 0, width: 0, height: 0, x: 0, y: 0, w: 0, h: 0 };
+        applyCropBtn.disabled = true;
+        applyCensorBtn.disabled = true;
+        updateCropInputs();
+        redrawCanvasWithOverlay();
+    }
+
 
     // --- RESIZE LOGIC ---
     
@@ -279,7 +305,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const height = parseInt(heightInput.value);
 
         if (width <= 0 || height <= 0 || !width || !height) {
-            alert('Please enter valid dimensions.');
+            alert('Vui lòng nhập kích thước hợp lệ.');
             return;
         }
         
@@ -295,7 +321,7 @@ document.addEventListener('DOMContentLoaded', () => {
         editedImage.onload = handleImageStateChange;
     }
     
-    // --- CROP LOGIC ---
+    // --- SELECTION LOGIC (for CROP & CENSOR) ---
     
     function getMousePos(e) {
         const rect = canvas.getBoundingClientRect();
@@ -304,177 +330,177 @@ document.addEventListener('DOMContentLoaded', () => {
           y: (e.clientY - rect.top) * (canvas.height / rect.height)
         };
     }
-
-    function startCrop(e) {
-        if (!isCropping) return;
+    
+    function startSelection(e) {
+        if (activeTool === 'none') return;
+        e.preventDefault();
         isDragging = true;
         const pos = getMousePos(e);
-        cropRect.startX = pos.x;
-        cropRect.startY = pos.y;
-        cropRect.width = 0;
-        cropRect.height = 0;
+        selectionRect.startX = pos.x;
+        selectionRect.startY = pos.y;
+        selectionRect.width = 0;
+        selectionRect.height = 0;
         applyCropBtn.disabled = true;
+        applyCensorBtn.disabled = true;
     }
-    
-    function dragCrop(e) {
-        if (!isCropping || !isDragging) return;
+
+    function dragSelection(e) {
+        if (activeTool === 'none' || !isDragging) return;
+        e.preventDefault();
         const pos = getMousePos(e);
-        cropRect.width = pos.x - cropRect.startX;
-        cropRect.height = pos.y - cropRect.startY;
-        redrawCanvasWithOverlay();
-        updateCropInputs();
-    }
-    
-    function endCrop() {
-        if (!isCropping || !isDragging) return;
-        isDragging = false;
-        if (Math.abs(cropRect.width) > 10 && Math.abs(cropRect.height) > 10) {
-           applyCropBtn.disabled = false;
+
+        if (activeTool === 'crop' && cropAspectRatio !== 'free') {
+            const [ratioW, ratioH] = cropAspectRatio.split(',').map(Number);
+            const aspectRatio = ratioW / ratioH;
+            
+            let newWidth = pos.x - selectionRect.startX;
+            let newHeight = newWidth / aspectRatio;
+            
+            selectionRect.width = newWidth;
+            selectionRect.height = newHeight;
         } else {
-           applyCropBtn.disabled = true;
-           cropRect = { startX: 0, startY: 0, width: 0, height: 0 };
-           updateCropInputs();
-           redrawCanvasWithOverlay();
+            selectionRect.width = pos.x - selectionRect.startX;
+            selectionRect.height = pos.y - selectionRect.startY;
+        }
+        
+        updateSelectionRectDimensions();
+        redrawCanvasWithOverlay();
+        if (activeTool === 'crop') {
+            updateCropInputs();
+        }
+    }
+
+    function endSelection() {
+        if (activeTool === 'none' || !isDragging) return;
+        isDragging = false;
+        if (selectionRect.w > 10 && selectionRect.h > 10) {
+           if (activeTool === 'crop') applyCropBtn.disabled = false;
+           if (activeTool === 'censor') applyCensorBtn.disabled = false;
+        } else {
+           resetSelection();
         }
     }
     
-    function updateCropInputs() {
-        cropXInput.value = Math.round(cropRect.width > 0 ? cropRect.startX : cropRect.startX + cropRect.width);
-        cropYInput.value = Math.round(cropRect.height > 0 ? cropRect.startY : cropRect.startY + cropRect.height);
-        cropWidthInput.value = Math.round(Math.abs(cropRect.width));
-        cropHeightInput.value = Math.round(Math.abs(cropRect.height));
+    function updateSelectionRectDimensions() {
+        selectionRect.x = selectionRect.width > 0 ? selectionRect.startX : selectionRect.startX + selectionRect.width;
+        selectionRect.y = selectionRect.height > 0 ? selectionRect.startY : selectionRect.startY + selectionRect.height;
+        selectionRect.w = Math.abs(selectionRect.width);
+        selectionRect.h = Math.abs(selectionRect.height);
     }
     
-    function handleCropInputChange() {
-        const x = parseInt(cropXInput.value) || 0;
-        const y = parseInt(cropYInput.value) || 0;
-        const w = parseInt(cropWidthInput.value) || 0;
-        const h = parseInt(cropHeightInput.value) || 0;
-        
-        cropRect = { startX: x, startY: y, width: w, height: h };
-        applyCropBtn.disabled = w <= 0 || h <= 0;
-        redrawCanvasWithOverlay();
-    }
-
     function redrawCanvasWithOverlay() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(editedImage, 0, 0, canvas.width, canvas.height);
 
-        if (!isCropping || cropRect.width === 0 || cropRect.height === 0 ) return;
+        if (activeTool === 'none' || selectionRect.w < 1 || selectionRect.h < 1 ) return;
 
-        const x = cropRect.width > 0 ? cropRect.startX : cropRect.startX + cropRect.width;
-        const y = cropRect.height > 0 ? cropRect.startY : cropRect.startY + cropRect.height;
-        const width = Math.abs(cropRect.width);
-        const height = Math.abs(cropRect.height);
+        if (activeTool === 'crop') {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.clearRect(selectionRect.x, selectionRect.y, selectionRect.w, selectionRect.h);
+            ctx.strokeStyle = '#007bff';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(selectionRect.x, selectionRect.y, selectionRect.w, selectionRect.h);
+        } else if (activeTool === 'censor') {
+            ctx.strokeStyle = '#ffc107'; // Yellow
+            ctx.lineWidth = 2;
+            ctx.strokeRect(selectionRect.x, selectionRect.y, selectionRect.w, selectionRect.h);
+        }
+    }
 
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.clearRect(x, y, width, height);
+    // --- CROP LOGIC ---
+    
+    function updateCropInputs() {
+        cropXInput.value = Math.round(selectionRect.x);
+        cropYInput.value = Math.round(selectionRect.y);
+        cropWidthInput.value = Math.round(selectionRect.w);
+        cropHeightInput.value = Math.round(selectionRect.h);
+    }
+    
+    function handleCropInputChange() {
+        selectionRect.x = parseInt(cropXInput.value) || 0;
+        selectionRect.y = parseInt(cropYInput.value) || 0;
+        selectionRect.w = parseInt(cropWidthInput.value) || 0;
+        selectionRect.h = parseInt(cropHeightInput.value) || 0;
+        
+        selectionRect.startX = selectionRect.x;
+        selectionRect.startY = selectionRect.y;
+        selectionRect.width = selectionRect.w;
+        selectionRect.height = selectionRect.h;
 
-        ctx.strokeStyle = '#007bff';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(x, y, width, height);
+        applyCropBtn.disabled = selectionRect.w <= 0 || selectionRect.h <= 0;
+        redrawCanvasWithOverlay();
     }
     
     function applyCrop() {
-        if (Math.abs(cropRect.width) < 1 || Math.abs(cropRect.height) < 1) return;
-        
+        if (selectionRect.w < 1 || selectionRect.h < 1) return;
         saveState();
         
-        const x = cropRect.width > 0 ? cropRect.startX : cropRect.startX + cropRect.width;
-        const y = cropRect.height > 0 ? cropRect.startY : cropRect.startY + cropRect.height;
-        const width = Math.abs(cropRect.width);
-        const height = Math.abs(cropRect.height);
-
         const tempCanvas = document.createElement('canvas');
         const tempCtx = tempCanvas.getContext('2d');
-        tempCanvas.width = width;
-        tempCanvas.height = height;
+        tempCanvas.width = selectionRect.w;
+        tempCanvas.height = selectionRect.h;
         
-        tempCtx.drawImage(editedImage, x, y, width, height, 0, 0, width, height);
+        tempCtx.drawImage(editedImage, selectionRect.x, selectionRect.y, selectionRect.w, selectionRect.h, 0, 0, selectionRect.w, selectionRect.h);
         
         editedImage.src = tempCanvas.toDataURL();
         editedImage.onload = handleImageStateChange;
     }
 
-    // --- REMOVE BACKGROUND LOGIC ---
+    // --- ROTATE LOGIC ---
 
-    async function loadBodyPixModel() {
-        if (bodyPixModel || typeof bodyPix === 'undefined') return;
-        try {
-            applyRemoveBgBtn.disabled = true;
-            removeBgStatus.textContent = 'Đang tải mô hình AI, vui lòng chờ...';
-            removeBgStatus.style.display = 'block';
-
-            bodyPixModel = await bodyPix.load({
-                architecture: 'MobileNetV1',
-                outputStride: 16,
-                multiplier: 0.75,
-                quantBytes: 2
-            });
-            
-            removeBgStatus.textContent = 'Mô hình AI đã sẵn sàng. Nhấn nút để bắt đầu.';
-            applyRemoveBgBtn.disabled = false;
-            
-        } catch (error) {
-            console.error("Lỗi tải mô hình BodyPix:", error);
-            removeBgStatus.textContent = 'Lỗi khi tải mô hình AI. Vui lòng làm mới trang và thử lại.';
-            applyRemoveBgBtn.disabled = true;
-        }
+    function rotateImage(degrees) {
+        saveState();
+        
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d');
+        
+        tempCanvas.width = editedImage.height;
+        tempCanvas.height = editedImage.width;
+        
+        tempCtx.translate(tempCanvas.width / 2, tempCanvas.height / 2);
+        tempCtx.rotate(degrees * Math.PI / 180);
+        tempCtx.drawImage(editedImage, -editedImage.width / 2, -editedImage.height / 2);
+        
+        editedImage.src = tempCanvas.toDataURL();
+        editedImage.onload = handleImageStateChange;
     }
 
-    async function applyRemoveBackground() {
-        if (!bodyPixModel) {
-            alert("Mô hình AI chưa được tải xong. Vui lòng chờ.");
-            return;
-        }
+    // --- CENSOR (PIXELATE) LOGIC ---
+    
+    function applyPixelate() {
+        if (selectionRect.w < 1 || selectionRect.h < 1) return;
+        saveState();
 
-        try {
-            applyRemoveBgBtn.disabled = true;
-            removeBgStatus.textContent = 'Đang phân tích và xóa nền...';
+        const pixelSize = parseInt(pixelateSlider.value, 10);
+        const x = Math.round(selectionRect.x);
+        const y = Math.round(selectionRect.y);
+        const w = Math.round(selectionRect.w);
+        const h = Math.round(selectionRect.h);
 
-            const segmentation = await bodyPixModel.segmentPerson(editedImage, {
-                flipHorizontal: false,
-                internalResolution: 'medium',
-                segmentationThreshold: 0.6
-            });
+        // Turn off image smoothing to get crisp pixels
+        ctx.imageSmoothingEnabled = false;
 
-            if (!segmentation || segmentation.data.every(p => p === -1)) {
-                alert('Không thể nhận diện được chủ thể trong ảnh. Vui lòng thử với ảnh khác rõ hơn.');
-                removeBgStatus.textContent = 'Mô hình AI đã sẵn sàng.';
-                applyRemoveBgBtn.disabled = false;
-                return;
-            }
+        // Downscale the selected region to a tiny size
+        const smallW = Math.max(1, Math.round(w / pixelSize));
+        const smallH = Math.max(1, Math.round(h / pixelSize));
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = smallW;
+        tempCanvas.height = smallH;
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCtx.drawImage(canvas, x, y, w, h, 0, 0, smallW, smallH);
 
-            const mask = bodyPix.toMask(segmentation);
+        // Draw the tiny version back onto the main canvas.
+        // The browser will scale it up, creating the pixelated effect.
+        ctx.drawImage(tempCanvas, 0, 0, smallW, smallH, x, y, w, h);
 
-            saveState();
+        // Turn image smoothing back on for other operations
+        ctx.imageSmoothingEnabled = true;
 
-            const tempCanvas = document.createElement('canvas');
-            const tempCtx = tempCanvas.getContext('2d');
-            tempCanvas.width = mask.width;
-            tempCanvas.height = mask.height;
-
-            // Draw the mask
-            tempCtx.putImageData(mask, 0, 0);
-            
-            // Use the mask to clip the original image
-            tempCtx.globalCompositeOperation = 'source-in';
-            tempCtx.drawImage(editedImage, 0, 0, mask.width, mask.height);
-            
-            editedImage.src = tempCanvas.toDataURL('image/png'); // Always use PNG for transparency
-            editedImage.onload = () => {
-                 handleImageStateChange();
-                 removeBgStatus.textContent = 'Xóa nền thành công! Bạn có thể xuất ảnh ở tab Export.';
-                 applyRemoveBgBtn.disabled = false;
-            };
-            
-        } catch(error) {
-            console.error("Lỗi khi xóa nền:", error);
-            alert("Đã xảy ra lỗi trong quá trình xóa nền. Vui lòng thử lại.");
-            removeBgStatus.textContent = 'Đã xảy ra lỗi. Mô hình AI đã sẵn sàng.';
-            applyRemoveBgBtn.disabled = false;
-        }
+        editedImage.src = canvas.toDataURL();
+        editedImage.onload = () => {
+            handleImageStateChange();
+        };
     }
 
 
