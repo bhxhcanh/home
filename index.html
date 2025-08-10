@@ -193,10 +193,10 @@
             <h4>Danh sách BHYT đến hạn theo từng nhân viên thu</h4>
             <div id="bhytDataArea">
               <div class="mb-3 mt-3 d-flex flex-wrap align-items-center">
-                  <button class="btn btn-primary me-2 mb-2" onclick="loadData('dueSoon')">Sắp hết hạn (±30 ngày)</button>
-                  <button class="btn btn-warning me-2 mb-2" onclick="loadData('expiredRecently')">Đã hết hạn (30–90 ngày)</button>
+                  <button class="btn btn-primary me-2 mb-2" onclick="loadData('dueSoon')">Hạn ±30 ngày</button>
+                  <button class="btn btn-warning me-2 mb-2" onclick="loadData('expiredRecently')">Hết 30–90 ngày</button>
                   <select id="monthSelect" class="form-select d-inline w-auto me-2 mb-2" onchange="loadData('byMonth')">
-                      <option value="">Lọc theo tháng hết hạn</option>
+                      <option value="">Theo tháng</option>
                   </select>
                   <button class="btn btn-secondary me-2 mb-2" onclick="clearAllFilters()">Xoá bộ lọc</button>
                   <button class="btn btn-success me-2 mb-2" onclick="exportToExcel()"><i class="bi bi-file-earmark-excel"></i> Xuất Excel</button>
