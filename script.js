@@ -788,6 +788,23 @@ document.addEventListener('DOMContentLoaded', () => {
   initApp();
   initQRCodeTool();
 
+  // Auto-hide mobile navbar on menu item click
+  const navLinks = document.querySelectorAll('#navbarContent .nav-link');
+  const navbarContent = document.getElementById('navbarContent');
+  
+  if (navbarContent) {
+    const bsCollapse = bootstrap.Collapse.getOrCreateInstance(navbarContent);
+    navLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        // If the collapsible menu is currently shown, hide it.
+        // This is primarily for mobile view where the menu is toggled.
+        if (navbarContent.classList.contains('show')) {
+          bsCollapse.hide();
+        }
+      });
+    });
+  }
+
   // Initialize Image Editor logic if its tab exists
   if (document.getElementById('hinhanh-tab-pane')) {
     // --- Lấy các phần tử DOM ---
