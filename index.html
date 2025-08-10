@@ -147,11 +147,25 @@
 
   <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
     <div class="container-fluid">
-      <a class="navbar-brand fw-bold" href="#">Công cụ trực tuyến</a>
+      <a class="navbar-brand fw-bold d-none d-lg-block" href="#">Công cụ trực tuyến</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0" id="mainNavItems" role="tablist">
+          <li class="nav-item" role="presentation" id="home-tab-li" style="display: none;">
+            <a class="nav-link" id="home-tab" data-bs-toggle="tab" data-bs-target="#home-tab-pane" href="#" role="tab" aria-controls="home-tab-pane">Thông báo</a>
+          </li>
+          <li class="nav-item" role="presentation" id="bhyt-tab-li" style="display: none;">
+            <a class="nav-link" id="bhyt-tab" data-bs-toggle="tab" data-bs-target="#bhyt-tab-pane" href="#" role="tab" aria-controls="bhyt-tab-pane">Dữ liệu đáo hạn BHYT</a>
+          </li>
+          <li class="nav-item" role="presentation">
+            <a class="nav-link active" id="qrcode-tab" data-bs-toggle="tab" data-bs-target="#qrcode-tab-pane" href="#" role="tab" aria-controls="qrcode-tab-pane" aria-selected="true">Công cụ QR Code</a>
+          </li>
+          <li class="nav-item" role="presentation">
+            <a class="nav-link" id="hinhanh-tab" data-bs-toggle="tab" data-bs-target="#hinhanh-tab-pane" href="#" role="tab" aria-controls="hinhanh-tab-pane">Chỉnh sửa ảnh</a>
+          </li>
+        </ul>
         <div id="userActions" class="ms-auto">
           <!-- Populated by JS -->
         </div>
@@ -160,22 +174,6 @@
   </nav>
 
   <div class="container-fluid mt-3">
-    <!-- Tabs Navigation -->
-    <ul class="nav nav-tabs" id="mainTabs" role="tablist">
-      <li class="nav-item" role="presentation" id="home-tab-li" style="display: none;">
-        <button class="nav-link" id="home-tab" data-bs-toggle="tab" data-bs-target="#home-tab-pane" type="button" role="tab" aria-controls="home-tab-pane" aria-selected="false">Thông báo</button>
-      </li>
-      <li class="nav-item" role="presentation" id="bhyt-tab-li" style="display: none;">
-        <button class="nav-link" id="bhyt-tab" data-bs-toggle="tab" data-bs-target="#bhyt-tab-pane" type="button" role="tab" aria-controls="bhyt-tab-pane" aria-selected="false">Dữ liệu đáo hạn BHYT</button>
-      </li>
-      <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="qrcode-tab" data-bs-toggle="tab" data-bs-target="#qrcode-tab-pane" type="button" role="tab" aria-controls="qrcode-tab-pane" aria-selected="true">Công cụ QR Code</button>
-      </li>
-      <li class="nav-item" role="presentation">
-        <button class="nav-link" id="hinhanh-tab" data-bs-toggle="tab" data-bs-target="#hinhanh-tab-pane" type="button" role="tab" aria-controls="hinhanh-tab-pane" aria-selected="false">Chỉnh sửa ảnh</button>
-      </li>
-    </ul>
-
     <!-- Tabs Content -->
     <div class="tab-content" id="mainTabsContent">
       <!-- Home/Notification Tab -->
