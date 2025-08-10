@@ -627,20 +627,18 @@ input[type="range"]::-moz-range-thumb {
 
 @media (max-width: 767.98px) {
   /* --- Scrollable Tabs (Mobile only) --- */
-  .nav-tabs, #qr-type-pills, .hinhanh-app-wrapper .tabs {
+  #qr-type-pills, .hinhanh-app-wrapper .tabs {
     flex-wrap: nowrap;
     overflow-x: auto;
     /* Hide scrollbar visually for a cleaner look */
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
   }
-  .nav-tabs::-webkit-scrollbar,
   #qr-type-pills::-webkit-scrollbar,
   .hinhanh-app-wrapper .tabs::-webkit-scrollbar {
     display: none; /* Chrome, Safari, and Opera */
   }
 
-  .nav-tabs .nav-item,
   #qr-type-pills .nav-item,
   .hinhanh-app-wrapper .tabs .tab-btn {
     flex-shrink: 0;
