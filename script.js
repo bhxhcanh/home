@@ -1,27 +1,811 @@
 // script.js
 
-document.addEventListener('DOMContentLoaded', () => {
-    // Chỉ thực thi script nếu tìm thấy container của trình chỉnh sửa ảnh
-    if (!document.getElementById('hinhanh-tab-pane')) {
+const CONFIG = {
+  API_URL: 'https://script.google.com/macros/s/AKfycbwupeI_-uhLqsnv1HiHAnQvjEojHpXra-tZoxJt_Md8-WesJxz8Eif3Vz9WpmOv3sXs/exec'
+};
+
+let deviceId = localStorage.getItem('bhyt_deviceId');
+if (!deviceId) {
+  deviceId = self.crypto.randomUUID ? self.crypto.randomUUID() : 'dev-' + Date.now() + Math.random().toString(36).substring(2);
+  localStorage.setItem('bhyt_deviceId', deviceId);
+}
+
+let currentEmail = '';
+let tempLoginCredentials = {};
+let authModalInstance;
+let changePasswordModalInstance;
+let otpTimerInterval;
+
+
+function showAuthForm(formId) {
+    const modalTitle = document.getElementById('authModalLabel');
+    document.querySelectorAll('#authModal .modal-body > div').forEach(form => {
+        form.classList.add('hidden');
+    });
+    document.getElementById(formId).classList.remove('hidden');
+
+    if (formId === 'loginForm') modalTitle.textContent = 'Đăng nhập';
+    else if (formId === 'registerForm') modalTitle.textContent = 'Đăng ký';
+    else if (formId === 'forgotForm') modalTitle.textContent = 'Quên mật khẩu';
+    else if (formId === 'resetForm') modalTitle.textContent = 'Đặt lại mật khẩu';
+    else if (formId === 'deviceOtpForm') modalTitle.textContent = 'Xác thực thiết bị';
+}
+
+async function handleLogin() {
+  let email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value.trim();
+  const loginMessage = document.getElementById('loginMessage');
+  loginMessage.innerText = '';
+
+  if (email && !email.includes('@')) {
+    email += '@gmail.com';
+  }
+
+  if (!email || !password) {
+    loginMessage.innerText = 'Vui lòng nhập email và mật khẩu.';
+    return;
+  }
+  tempLoginCredentials = { email, password };
+  const body = `action=login&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}&deviceId=${encodeURIComponent(deviceId)}`;
+
+  try {
+    const res = await fetch(CONFIG.API_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body });
+    const data = await res.json();
+    if (data.success) {
+      localStorage.setItem('bhyt_user', JSON.stringify(data.data));
+      authModalInstance.hide();
+      window.location.reload();
+    } else if (data.requireOtp) {
+      const deviceOtpMessage = document.getElementById('deviceOtpMessage');
+      deviceOtpMessage.className = 'mt-3 text-info';
+      deviceOtpMessage.innerText = data.message;
+      currentEmail = email;
+      showAuthForm('deviceOtpForm');
+    } else {
+      loginMessage.innerText = data.error || 'Đăng nhập thất bại.';
+    }
+  } catch (error) {
+    console.error("Login error:", error);
+    loginMessage.innerText = 'Lỗi kết nối. Vui lòng thử lại.';
+  }
+}
+
+async function handleRegister() {
+    const email = document.getElementById('regEmail').value.trim();
+    const fullName = document.getElementById('regName').value.trim();
+    const cccd = document.getElementById('regCCCD').value.trim();
+    const password = document.getElementById('regPassword').value.trim();
+    const registerMessage = document.getElementById('registerMessage');
+    registerMessage.innerText = '';
+
+    if (!email || !fullName || !cccd || !password) { registerMessage.innerText = 'Vui lòng điền đầy đủ thông tin.'; return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { registerMessage.innerText = 'Định dạng email không hợp lệ.'; return; }
+    if (!/^\d{12}$/.test(cccd)) { registerMessage.innerText = 'Số CCCD phải là 12 ký tự số.'; return; }
+    if (!/^(?=.*[A-Z])(?=.*\d).{8,}$/.test(password)) { registerMessage.innerText = 'Mật khẩu phải có ít nhất 8 ký tự, bao gồm ít nhất 1 chữ hoa và 1 chữ số.'; return; }
+
+    const body = `action=signup&email=${encodeURIComponent(email)}&fullName=${encodeURIComponent(fullName)}&cccd=${encodeURIComponent(cccd)}&password=${encodeURIComponent(password)}`;
+    try {
+        const res = await fetch(CONFIG.API_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body });
+        const data = await res.json();
+        if (data.success) {
+            alert(data.message || 'Đăng ký thành công! Tài khoản của bạn đang chờ phê duyệt.');
+            showAuthForm('loginForm');
+        } else {
+            registerMessage.innerText = data.error || 'Đăng ký thất bại.';
+        }
+    } catch (error) {
+        console.error("Registration error:", error);
+        registerMessage.innerText = 'Lỗi kết nối. Vui lòng thử lại.';
+    }
+}
+
+function startOtpCountdown(duration = 60) {
+    if (otpTimerInterval) clearInterval(otpTimerInterval);
+
+    const container = document.getElementById('resendOtpContainer');
+    let timer = duration;
+
+    const updateTimer = () => {
+        if (timer > 0) {
+            container.innerHTML = `<span>Gửi lại mã sau ${timer}s</span>`;
+            timer--;
+        } else {
+            clearInterval(otpTimerInterval);
+            container.innerHTML = `<a href="#" onclick="event.preventDefault(); handleForgot(true);">Gửi lại mã OTP</a>`;
+        }
+    };
+
+    updateTimer(); // Initial call
+    otpTimerInterval = setInterval(updateTimer, 1000);
+}
+
+async function handleForgot(isResend = false) {
+    const emailInput = document.getElementById('forgotEmail');
+    const messageContainer = isResend ? document.getElementById('resetMessage') : document.getElementById('forgotMessage');
+
+    // Clear previous messages
+    document.getElementById('forgotMessage').innerText = '';
+    document.getElementById('resetMessage').innerText = '';
+
+    const email = isResend ? currentEmail : emailInput.value.trim();
+
+    if (!email) {
+        messageContainer.innerText = 'Vui lòng nhập email.';
+        messageContainer.className = 'mt-3 text-danger';
         return;
     }
 
+    if (!isResend) {
+        currentEmail = email;
+    }
+
+    if (isResend) {
+        document.getElementById('resendOtpContainer').innerHTML = `<span>Đang gửi...</span>`;
+    } else {
+        messageContainer.innerText = 'Đang gửi...';
+        messageContainer.className = 'mt-3 text-muted';
+    }
+
+    const body = `action=requestPasswordOtp&email=${encodeURIComponent(email)}`;
+    try {
+        const res = await fetch(CONFIG.API_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body });
+        const data = await res.json();
+
+        if (data.success) {
+            if (!isResend) {
+                document.getElementById('resetEmailDisplay').textContent = email;
+                showAuthForm('resetForm');
+            }
+            // Show success message in the reset form's message area
+            const resetMsgEl = document.getElementById('resetMessage');
+            resetMsgEl.innerText = data.message;
+            resetMsgEl.className = 'mt-3 text-success';
+
+            startOtpCountdown();
+        } else {
+            // Show error in the appropriate message area
+            messageContainer.className = 'mt-3 text-danger';
+            messageContainer.innerText = data.error;
+            // If it was a resend attempt, restore the resend link
+            if (isResend) {
+                document.getElementById('resendOtpContainer').innerHTML = `<a href="#" onclick="event.preventDefault(); handleForgot(true);">Gửi lại mã OTP</a>`;
+            }
+        }
+    } catch (error) {
+        console.error("Forgot password error:", error);
+        messageContainer.innerText = 'Lỗi kết nối. Vui lòng thử lại.';
+        messageContainer.className = 'mt-3 text-danger';
+        if (isResend) {
+             document.getElementById('resendOtpContainer').innerHTML = `<a href="#" onclick="event.preventDefault(); handleForgot(true);">Gửi lại mã OTP</a>`;
+        }
+    }
+}
+
+
+async function handleResetPassword() {
+    const otp = document.getElementById('otpCode').value.trim();
+    const newPassword = document.getElementById('newPassword').value.trim();
+    const resetMessage = document.getElementById('resetMessage');
+    resetMessage.innerText = '';
+    if (!otp || !newPassword) { resetMessage.innerText = 'Vui lòng nhập OTP và mật khẩu mới.'; return; }
+    if (!/^(?=.*[A-Z])(?=.*\d).{8,}$/.test(newPassword)) { resetMessage.innerText = 'Mật khẩu mới phải có ít nhất 1 chữ hoa và 1 chữ số.'; return; }
+    const body = `action=verifyOtpAndResetPassword&email=${encodeURIComponent(currentEmail)}&otp=${encodeURIComponent(otp)}&newPassword=${encodeURIComponent(newPassword)}`;
+    try {
+        const res = await fetch(CONFIG.API_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body });
+        const data = await res.json();
+        if (data.success) {
+            alert(data.message || 'Đặt lại mật khẩu thành công!');
+            showAuthForm('loginForm');
+        } else {
+            resetMessage.innerText = data.error || data.message;
+        }
+    } catch (error) {
+        console.error("Reset password error:", error);
+        resetMessage.innerText = 'Lỗi kết nối. Vui lòng thử lại.';
+    }
+}
+
+async function handleDeviceVerification() {
+    const otp = document.getElementById('deviceOtpCode').value.trim();
+    const deviceOtpMessage = document.getElementById('deviceOtpMessage');
+    deviceOtpMessage.innerText = '';
+    if (!otp) { deviceOtpMessage.innerText = 'Vui lòng nhập mã OTP.'; return; }
+    if (!tempLoginCredentials.email) { deviceOtpMessage.innerText = 'Phiên làm việc đã hết hạn. Vui lòng quay lại và đăng nhập.'; return; }
+    const deviceName = navigator.userAgent;
+    const body = `action=verifyDeviceAndLogin&email=${encodeURIComponent(tempLoginCredentials.email)}&password=${encodeURIComponent(tempLoginCredentials.password)}&otp=${encodeURIComponent(otp)}&deviceId=${encodeURIComponent(deviceId)}&deviceName=${encodeURIComponent(deviceName)}`;
+    try {
+        const res = await fetch(CONFIG.API_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body });
+        const data = await res.json();
+        if (data.success) {
+            localStorage.setItem('bhyt_user', JSON.stringify(data.data));
+            authModalInstance.hide();
+            window.location.reload();
+        } else {
+            deviceOtpMessage.className = 'mt-3 text-danger';
+            deviceOtpMessage.innerText = data.error || 'Xác thực thất bại.';
+        }
+    } catch (error) {
+        console.error("Device verification error:", error);
+        deviceOtpMessage.innerText = 'Lỗi kết nối. Vui lòng thử lại.';
+    }
+}
+
+async function handleChangePassword() {
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('changeNewPassword').value;
+    const confirmPassword = document.getElementById('confirmNewPassword').value;
+    const messageEl = document.getElementById('changePasswordMessage');
+    messageEl.textContent = '';
+    messageEl.className = 'mt-3';
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+        messageEl.textContent = 'Vui lòng điền đầy đủ các trường.';
+        messageEl.classList.add('text-danger');
+        return;
+    }
+
+    if (newPassword !== confirmPassword) {
+        messageEl.textContent = 'Mật khẩu mới không khớp.';
+        messageEl.classList.add('text-danger');
+        return;
+    }
+
+    if (!/^(?=.*[A-Z])(?=.*\d).{8,}$/.test(newPassword)) {
+        messageEl.textContent = 'Mật khẩu mới phải có ít nhất 1 chữ hoa và 1 chữ số.';
+        messageEl.classList.add('text-danger');
+        return;
+    }
+
+    const user = JSON.parse(localStorage.getItem('bhyt_user') || '{}');
+    if (!user.sessionId) {
+        alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+        logout();
+        return;
+    }
+
+    const body = `action=changePassword&sessionId=${encodeURIComponent(user.sessionId)}&currentPassword=${encodeURIComponent(currentPassword)}&newPassword=${encodeURIComponent(newPassword)}`;
+
+    try {
+        const res = await fetch(CONFIG.API_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body });
+        const data = await res.json();
+
+        if (data.success) {
+            messageEl.textContent = data.message;
+            messageEl.classList.add('text-success');
+            setTimeout(() => {
+                changePasswordModalInstance.hide();
+                // Clear fields after closing
+                document.getElementById('currentPassword').value = '';
+                document.getElementById('changeNewPassword').value = '';
+                document.getElementById('confirmNewPassword').value = '';
+                messageEl.textContent = '';
+            }, 2000);
+        } else {
+            messageEl.textContent = data.error || 'Đã xảy ra lỗi.';
+            messageEl.classList.add('text-danger');
+        }
+    } catch (error) {
+        console.error('Change password error:', error);
+        messageEl.textContent = 'Lỗi kết nối. Vui lòng thử lại.';
+        messageEl.classList.add('text-danger');
+    }
+}
+
+function logout() {
+  const user = JSON.parse(localStorage.getItem('bhyt_user') || '{}');
+  if (user.sessionId) {
+    const body = `action=logout&sessionId=${encodeURIComponent(user.sessionId)}`;
+    try {
+      fetch(CONFIG.API_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body, keepalive: true });
+    } catch (error) {
+      console.error("Error during server-side logout call:", error);
+    }
+  }
+  localStorage.removeItem('bhyt_user');
+  window.location.reload();
+}
+
+function exportToExcel() {
+  if (typeof XLSX === 'undefined') {
+    alert('Lỗi: Thư viện xuất Excel (SheetJS) chưa được tải. Vui lòng kiểm tra kết nối mạng và thử lại.');
+    return;
+  }
+
+  const tableBody = document.getElementById('dataBody');
+  const visibleRows = Array.from(tableBody.rows).filter(row => row.style.display !== 'none');
+
+  if (visibleRows.length === 0) {
+    alert('Không có dữ liệu để xuất. Vui lòng tải và lọc dữ liệu trước.');
+    return;
+  }
+
+  const headerRow = document.querySelector('#bhyt-tab-pane thead tr:first-child');
+  const headers = Array.from(headerRow.cells).map(th => th.textContent.trim());
+
+  const data = visibleRows.map(row =>
+    Array.from(row.cells).map(td => {
+        const text = td.textContent.trim();
+        // Cố gắng chuyển đổi các chuỗi số thành kiểu số để Excel định dạng tốt hơn
+        if (/^-?\d+(\.\d+)?$/.test(text) && !text.includes('/')) {
+            return Number(text);
+        }
+        return text;
+    })
+  );
+
+  const worksheet = XLSX.utils.aoa_to_sheet([headers, ...data]);
+
+  // Tự động điều chỉnh độ rộng cột
+  const cols = headers.map((header, index) => {
+    let maxLength = header.length;
+    data.forEach(row => {
+      const cellContent = row[index];
+      if (cellContent != null) {
+        const len = cellContent.toString().length;
+        if (len > maxLength) {
+          maxLength = len;
+        }
+      }
+    });
+    return { wch: maxLength + 2 }; // Thêm một chút khoảng đệm
+  });
+  worksheet['!cols'] = cols;
+
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Danh sách BHYT');
+
+  const today = new Date();
+  const dateString = `${today.getDate().toString().padStart(2, '0')}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getFullYear()}`;
+  XLSX.writeFile(workbook, `BHYT_den_han_${dateString}.xlsx`);
+}
+
+// --- Main page logic ---
+const notificationLoadingElement = document.getElementById('notificationLoading');
+const notificationContentElement = document.getElementById('notificationContent');
+const monthSelectElement = document.getElementById('monthSelect');
+let bhytDataLoaded = false;
+
+async function loadNotification() {
+  notificationContentElement.innerHTML = '';
+  notificationLoadingElement.style.display = 'block';
+  notificationLoadingElement.innerHTML = 'Đang tải thông báo...';
+  const formBody = `action=fetchNotificationContent`;
+  try {
+    const res = await fetch(CONFIG.API_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: formBody });
+    const data = await res.json();
+    if (data.success && data.url) {
+      const iframe = document.createElement('iframe');
+      const url = new URL(data.url);
+      url.searchParams.set('embedded', 'true');
+      iframe.src = url.toString();
+      iframe.style.width = '100%';
+      iframe.style.height = '75vh';
+      iframe.style.border = 'none';
+      iframe.title = 'Thông báo từ quản trị viên';
+      iframe.onload = () => { notificationLoadingElement.style.display = 'none'; };
+      notificationContentElement.appendChild(iframe);
+    } else {
+      notificationLoadingElement.innerHTML = `<p class="text-danger">${data.error || 'Lỗi không xác định.'}</p>`;
+    }
+  } catch (err) {
+    console.error('Error fetching notification content:', err);
+    notificationLoadingElement.innerHTML = `<p class="text-danger">Lỗi hệ thống khi tải thông báo.</p>`;
+  }
+}
+
+// --- BHYT Filtering Logic ---
+function parseDateDDMMYYYY(dateString) {
+  if (!dateString || typeof dateString !== 'string') return null;
+  const parts = dateString.trim().split('/');
+  if (parts.length === 3) {
+      const day = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1; // JS months are 0-indexed
+      const year = parseInt(parts[2], 10);
+      if (!isNaN(day) && !isNaN(month) && !isNaN(year) && year > 1000) {
+          const date = new Date(year, month, day);
+          // Check if it's a valid date (e.g., handles 31/02/2023)
+          if (date.getFullYear() === year && date.getMonth() === month && date.getDate() === day) {
+              return date;
+          }
+      }
+  }
+  return null;
+}
+
+function applyFilters() {
+  const filters = {
+      hanThe: document.getElementById('filterHanThe').value.trim(),
+      hoTen: document.getElementById('filterHoTen').value.trim().toLowerCase(),
+      gioiTinh: document.getElementById('filterGioiTinh').value,
+      ngaySinh: document.getElementById('filterNgaySinh').value.trim(),
+      soDienThoai: document.getElementById('filterSoDienThoai').value.trim(),
+      diaChi: document.getElementById('filterDiaChi').value.trim().toLowerCase(),
+      maPb: document.getElementById('filterMaPb').value.trim().toLowerCase(),
+      cmnd: document.getElementById('filterCmnd').value.trim(),
+      maBv: document.getElementById('filterMaBv').value.trim().toLowerCase(),
+      soKcb: document.getElementById('filterSoKcb').value.trim(),
+      maDvi: document.getElementById('filterMaDvi').value.trim().toLowerCase()
+  };
+
+  const tableBody = document.getElementById('dataBody');
+  if (!tableBody) return;
+
+  for (const row of tableBody.rows) {
+      const cells = row.cells;
+      let visible = true;
+
+      // Text filters
+      if (filters.hoTen && !cells[1].textContent.toLowerCase().includes(filters.hoTen)) visible = false;
+      if (filters.soDienThoai && !cells[4].textContent.includes(filters.soDienThoai)) visible = false;
+      if (filters.diaChi && !cells[5].textContent.toLowerCase().includes(filters.diaChi)) visible = false;
+      if (filters.maPb && !cells[6].textContent.toLowerCase().includes(filters.maPb)) visible = false;
+      if (filters.cmnd && !cells[7].textContent.includes(filters.cmnd)) visible = false;
+      if (filters.maBv && !cells[8].textContent.toLowerCase().includes(filters.maBv)) visible = false;
+      if (filters.soKcb && !cells[9].textContent.includes(filters.soKcb)) visible = false;
+      if (filters.maDvi && !cells[10].textContent.toLowerCase().includes(filters.maDvi)) visible = false;
+
+      // Select filter
+      if (filters.gioiTinh && cells[2].textContent !== filters.gioiTinh) visible = false;
+
+      // Date filters (Hạn thẻ đến - col 0 & Ngày sinh - col 3)
+      [
+          { filter: filters.hanThe, cell: cells[0] },
+          { filter: filters.ngaySinh, cell: cells[3] }
+      ].forEach(dateFilter => {
+          if (dateFilter.filter && visible) { // only process if still visible
+              const cellDateText = dateFilter.cell.textContent;
+              const cellDate = parseDateDDMMYYYY(cellDateText);
+              let operator = '';
+              let filterDateText = dateFilter.filter;
+
+              if (filterDateText.startsWith('>=')) {
+                  operator = '>=';
+                  filterDateText = filterDateText.substring(2).trim();
+              } else if (filterDateText.startsWith('<=')) {
+                  operator = '<=';
+                  filterDateText = filterDateText.substring(2).trim();
+              } else if (filterDateText.startsWith('>')) {
+                  operator = '>';
+                  filterDateText = filterDateText.substring(1).trim();
+              } else if (filterDateText.startsWith('<')) {
+                  operator = '<';
+                  filterDateText = filterDateText.substring(1).trim();
+              } else if (filterDateText.startsWith('=')) {
+                  operator = '=';
+                  filterDateText = filterDateText.substring(1).trim();
+              }
+
+              const filterDate = parseDateDDMMYYYY(filterDateText);
+
+              if (filterDate && cellDate) {
+                  const cellTime = new Date(cellDate.getFullYear(), cellDate.getMonth(), cellDate.getDate()).getTime();
+                  const filterTime = new Date(filterDate.getFullYear(), filterDate.getMonth(), filterDate.getDate()).getTime();
+                  switch (operator) {
+                      case '>=': if (!(cellTime >= filterTime)) visible = false; break;
+                      case '<=': if (!(cellTime <= filterTime)) visible = false; break;
+                      case '>':  if (!(cellTime > filterTime)) visible = false; break;
+                      case '<': if (!(cellTime < filterTime)) visible = false; break;
+                      case '=': if (cellTime !== filterTime) visible = false; break;
+                      default: // if no operator, check if it contains
+                         if (!cellDateText.includes(dateFilter.filter)) visible = false;
+                  }
+              } else { // If parsing fails, do a "contains" search
+                  if (!cellDateText.includes(dateFilter.filter)) visible = false;
+              }
+          }
+      });
+      row.style.display = visible ? '' : 'none';
+  }
+}
+
+function clearAllFilters() {
+  const filterRow = document.querySelector('.filter-row');
+  if (filterRow) {
+      filterRow.querySelectorAll('input, select').forEach(input => {
+          if(input.tagName === 'SELECT') {
+              input.selectedIndex = 0;
+          } else {
+              input.value = "";
+          }
+      });
+  }
+  applyFilters();
+}
+// --- End of Filtering Logic ---
+
+async function loadData(type) {
+  document.getElementById('loading').innerText = 'Đang tải dữ liệu...';
+  document.getElementById('dataBody').innerHTML = '';
+  const user = JSON.parse(localStorage.getItem('bhyt_user') || '{}');
+  if (!user.sessionId) { logout(); return; }
+
+  const payload = { action: 'fetchBHYTData', filterType: type, sessionId: user.sessionId };
+  if (type === 'byMonth') {
+    const selectedValue = monthSelectElement.value;
+    if (!selectedValue) {
+        document.getElementById('loading').innerText = '';
+        document.getElementById('dataBody').innerHTML = '<tr><td colspan="11">Vui lòng chọn một tháng.</td></tr>';
+        return;
+    }
+    const [month, year] = selectedValue.split('/');
+    payload.month = month;
+    payload.year = year;
+  }
+  const formBody = Object.entries(payload).map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('&');
+  try {
+    const res = await fetch(CONFIG.API_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: formBody });
+    const data = await res.json();
+    if (data.success) {
+      bhytDataLoaded = true;
+      const rows = data.data.map(row => `
+        <tr>
+          <td>${row.hanTheDen||''}</td><td>${row.hoTen||''}</td><td>${row.gioiTinh||''}</td><td>${row.ngaySinh||''}</td><td>${row.soDienThoai||''}</td><td>${row.diaChiLh||''}</td><td>${row.maPb||''}</td><td>${row.soCmnd||''}</td><td>${row.maBv||''}</td><td>${row.soKcb||''}</td><td>${row.maDvi||''}</td>
+        </tr>`).join('');
+      document.getElementById('dataBody').innerHTML = rows || '<tr><td colspan="11">Không có dữ liệu</td></tr>';
+      // Apply filters to the newly loaded data
+      applyFilters();
+    } else {
+       if (data.error && (data.error.includes('hết hạn') || data.error.includes('không hợp lệ'))) {
+          alert(data.error + " Vui lòng đăng nhập lại."); logout();
+       } else {
+          document.getElementById('dataBody').innerHTML = `<tr><td colspan="11">${data.error || 'Lỗi không xác định.'}</td></tr>`;
+       }
+    }
+  } catch (err) {
+    console.error('Error fetching BHYT data:', err);
+    document.getElementById('dataBody').innerHTML = `<tr><td colspan="11">Lỗi hệ thống khi tải dữ liệu.</td></tr>`;
+  }
+  document.getElementById('loading').innerText = '';
+}
+
+function initApp() {
+    const user = JSON.parse(localStorage.getItem('bhyt_user') || '{}');
+    const userActions = document.getElementById('userActions');
+
+    if (user && user.sessionId) {
+        // Logged In State
+        userActions.innerHTML = `<div class="dropdown">
+                                  <button class="btn btn-outline-secondary dropdown-toggle btn-sm" type="button" id="userMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Xin chào, ${user.fullName}
+                                  </button>
+                                  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenuButton">
+                                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#changePasswordModal">Đổi mật khẩu</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="#" onclick="logout()">Đăng xuất</a></li>
+                                  </ul>
+                                </div>`;
+
+        document.getElementById('home-tab-li').style.display = 'block';
+        document.getElementById('bhyt-tab-li').style.display = 'block';
+
+        // Switch to home tab
+        const homeTabEl = document.getElementById('home-tab');
+        const qrcodeTabEl = document.getElementById('qrcode-tab');
+        new bootstrap.Tab(homeTabEl).show();
+
+        // Populate month/year dropdown
+        const today = new Date();
+        const currentYear = today.getFullYear();
+        for (let yOffset = 0; yOffset <= 1; yOffset++) {
+            const yearToDisplay = currentYear + yOffset;
+            for (let m = 1; m <= 12; m++) {
+                const option = document.createElement('option');
+                option.value = `${m}/${yearToDisplay}`;
+                option.textContent = `Tháng ${m}/${yearToDisplay}`;
+                monthSelectElement.appendChild(option);
+            }
+        }
+
+        // Add tab listeners for logged-in features
+        const bhytTab = document.querySelector('#bhyt-tab');
+        bhytTab.addEventListener('show.bs.tab', () => { if (!bhytDataLoaded) loadData('dueSoon'); });
+
+        const homeTab = document.querySelector('#home-tab');
+        homeTab.addEventListener('show.bs.tab', () => loadNotification());
+
+        loadNotification(); // Load initial content for the default tab
+
+    } else {
+        // Logged Out State
+        userActions.innerHTML = `<button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#authModal">Đăng nhập / Đăng ký</button>`;
+
+        document.getElementById('home-tab-li').style.display = 'none';
+        document.getElementById('bhyt-tab-li').style.display = 'none';
+
+        // Ensure public tab is active
+        const qrcodeTabEl = document.getElementById('qrcode-tab');
+        new bootstrap.Tab(qrcodeTabEl).show();
+    }
+}
+
+function initQRCodeTool() {
+    const generateBtn = document.getElementById('generate-btn');
+    const qrCodeContainer = document.getElementById('qrcode-container');
+    const statusMessage = document.getElementById('status-message');
+    const qrPills = document.querySelectorAll('#qr-type-pills .nav-link');
+
+    // QR Generator elements
+    const textInput = document.getElementById('qr-text-input');
+    const urlInput = document.getElementById('qr-url-input');
+    const wifiSsidInput = document.getElementById('qr-wifi-ssid');
+    const wifiPasswordInput = document.getElementById('qr-wifi-password');
+    const wifiEncryptionSelect = document.getElementById('qr-wifi-encryption');
+    const vcardNameInput = document.getElementById('qr-vcard-name');
+    const vcardPhoneInput = document.getElementById('qr-vcard-phone');
+    const vcardEmailInput = document.getElementById('qr-vcard-email');
+    const vcardOrgInput = document.getElementById('qr-vcard-org');
+
+    // QR Reader elements
+    const uploader = document.getElementById('qr-reader-uploader');
+    const uploadInput = document.getElementById('qr-upload-input');
+    const resultContainer = document.getElementById('qr-reader-result-container');
+    const resultText = document.getElementById('qr-reader-result-text');
+
+    // --- QR Code Generation ---
+    function generateQrCode() {
+        let data = '';
+        statusMessage.textContent = '';
+        qrCodeContainer.innerHTML = '';
+
+        const activePill = document.querySelector('#qr-type-pills .nav-link.active');
+        if (!activePill) return;
+        const activeQrTab = activePill.getAttribute('aria-controls');
+
+        switch (activeQrTab) {
+            case 'qr-text-pane':
+                data = textInput.value;
+                break;
+            case 'qr-url-pane':
+                data = urlInput.value;
+                if (data && !data.startsWith('http://') && !data.startsWith('https://')) {
+                    data = 'https://' + data;
+                }
+                break;
+            case 'qr-wifi-pane':
+                const ssid = wifiSsidInput.value;
+                const password = wifiPasswordInput.value;
+                const encryption = wifiEncryptionSelect.value;
+                if (ssid) {
+                    data = `WIFI:T:${encryption};S:${ssid};P:${password};;`;
+                }
+                break;
+            case 'qr-vcard-pane':
+                const name = vcardNameInput.value;
+                const phone = vcardPhoneInput.value;
+                const email = vcardEmailInput.value;
+                const org = vcardOrgInput.value;
+                if (name || phone || email || org) {
+                    data = `BEGIN:VCARD\nVERSION:3.0\nN:${name || ''}\n`;
+                    if (org) data += `ORG:${org}\n`;
+                    if (phone) data += `TEL:${phone}\n`;
+                    if (email) data += `EMAIL:${email}\n`;
+                    data += `END:VCARD`;
+                }
+                break;
+        }
+
+        if (data) {
+            try {
+                 new QRCode(qrCodeContainer, {
+                    text: data,
+                    width: 256,
+                    height: 256,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+            } catch (error) {
+                console.error("QR Code generation error:", error);
+                statusMessage.textContent = 'Không thể tạo mã QR. Dữ liệu có thể quá dài.';
+            }
+        } else {
+             if (activeQrTab !== 'qr-read-pane') {
+                statusMessage.textContent = 'Vui lòng nhập dữ liệu để tạo mã QR.';
+            }
+        }
+    }
+
+    if(generateBtn) {
+        generateBtn.addEventListener('click', generateQrCode);
+    }
+
+    // --- QR Code Reading ---
+    function handleQrFile(file) {
+        if (!file || !file.type.startsWith('image/')) {
+            alert('Vui lòng chọn một tệp ảnh.');
+            return;
+        }
+
+        resultContainer.style.display = 'none';
+        resultText.textContent = '';
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d', { willReadFrequently: true });
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0, img.width, img.height);
+                const imageData = ctx.getImageData(0, 0, img.width, img.height);
+
+                const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+                if (code) {
+                    resultText.textContent = code.data;
+                    resultContainer.style.display = 'block';
+                } else {
+                    alert('Không tìm thấy mã QR trong ảnh.');
+                }
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    if(uploadInput) {
+        uploadInput.addEventListener('change', (e) => handleQrFile(e.target.files[0]));
+    }
+
+    if(uploader) {
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploader.addEventListener(eventName, (e) => { e.preventDefault(); e.stopPropagation(); }, false);
+        });
+        uploader.addEventListener('drop', (e) => {
+             handleQrFile(e.dataTransfer.files[0]);
+        }, false);
+    }
+
+    // --- Tab Management ---
+    qrPills.forEach(pill => {
+        pill.addEventListener('shown.bs.tab', (event) => {
+            const newActiveTabId = event.target.getAttribute('aria-controls');
+            generateBtn.style.display = (newActiveTabId === 'qr-read-pane') ? 'none' : 'block';
+            qrCodeContainer.innerHTML = '';
+            statusMessage.textContent = '';
+            resultContainer.style.display = 'none';
+            resultText.textContent = '';
+            uploadInput.value = '';
+        });
+    });
+}
+
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Init Auth, BHYT, Notification, and QR Code tools
+  authModalInstance = new bootstrap.Modal(document.getElementById('authModal'));
+  changePasswordModalInstance = new bootstrap.Modal(document.getElementById('changePasswordModal'));
+
+  // Login on Enter key press in the password field
+  document.getElementById('loginPassword').addEventListener('keyup', function(event) {
+      if (event.key === 'Enter') {
+          event.preventDefault(); // Prevent any default action
+          handleLogin();
+      }
+  });
+
+  initApp();
+  initQRCodeTool();
+
+  // Initialize Image Editor logic if its tab exists
+  if (document.getElementById('hinhanh-tab-pane')) {
     // --- Lấy các phần tử DOM ---
     const uploader = document.getElementById('uploader');
     const uploadInput = document.getElementById('upload-input');
     const editor = document.getElementById('editor');
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
-    
+
     const tabBtns = document.querySelectorAll('.tabs .tab-btn');
     const tabContents = document.querySelectorAll('.controls-main .tab-content');
-    
+
     // --- Các điều khiển ---
     const widthInput = document.getElementById('width-input');
     const heightInput = document.getElementById('height-input');
     const aspectRatioLock = document.getElementById('aspect-ratio-lock');
     const applyResizeBtn = document.getElementById('apply-resize-btn');
-    
+
     const cropInputs = {
         x: document.getElementById('crop-x'),
         y: document.getElementById('crop-y'),
@@ -48,7 +832,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const qualityValue = document.getElementById('quality-value');
     const estimatedSizeEl = document.getElementById('estimated-size');
     const downloadBtn = document.getElementById('download-btn');
-    
+
     const undoBtn = document.getElementById('undo-btn');
     const redoBtn = document.getElementById('redo-btn');
     const resetBtn = document.getElementById('reset-btn');
@@ -78,7 +862,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let isDrawingCensor = false;
     let currentCensorRect = null;
     let censorDragStart = { x: 0, y: 0 };
-    
+
     // --- Khởi tạo ---
     function init() {
         // Kéo và thả file
@@ -88,7 +872,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         uploader.addEventListener('drop', handleDrop, false);
         uploadInput.addEventListener('change', (e) => handleFiles(e.target.files));
-        
+
         // Các nút điều khiển
         resetBtn.addEventListener('click', resetEditor);
         undoBtn.addEventListener('click', undo);
@@ -111,7 +895,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         e.stopPropagation();
     }
-    
+
     function handleDrop(e) {
         let dt = e.dataTransfer;
         let files = dt.files;
@@ -121,7 +905,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleFiles(files) {
         if (files.length === 0) return;
         let file = files[0];
-        
+
         originalFilename = file.name;
         // Xử lý file HEIC/HEIF
         if (/\.(heic|heif)$/i.test(file.name)) {
@@ -148,10 +932,10 @@ document.addEventListener('DOMContentLoaded', () => {
             originalAspectRatio = img.width / img.height;
             resetEditorState();
             addHistoryState({ image: img, width: img.width, height: img.height }, true);
-            
+
             uploader.classList.add('hidden');
             editor.classList.remove('hidden');
-            
+
             // Mặc định chọn tab resize
             switchTab('resize');
         };
@@ -160,16 +944,16 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         img.src = src;
     }
-    
+
     function resetEditor() {
         if (!confirm("Bạn có muốn tải ảnh mới không? Mọi thay đổi sẽ bị mất.")) return;
-        
+
         uploader.classList.remove('hidden');
         editor.classList.add('hidden');
         uploadInput.value = ''; // Reset input để có thể chọn lại cùng file
         resetEditorState();
     }
-    
+
     function resetEditorState() {
         originalImage = null;
         currentImageState = null;
@@ -189,25 +973,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         history.push(state);
         historyIndex++;
-        
+
         setCurrentState(state);
         if (!isInitial) {
            updateHistoryButtons();
         }
     }
-    
+
     function setCurrentState(state) {
         currentImageState = state;
         updateEditorWithState(state);
     }
-    
+
     function updateEditorWithState(state) {
         widthInput.value = state.width;
         heightInput.value = state.height;
         drawCanvas();
         updateEstimatedSize();
     }
-    
+
     function undo() {
         if (historyIndex > 0) {
             historyIndex--;
@@ -244,12 +1028,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         canvas.width = image.width * scale;
         canvas.height = image.height * scale;
-        
+
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         // Lưu trạng thái canvas trước khi xoay
         ctx.save();
-        
+
         // Áp dụng xoay để xem trước nếu đang ở tab xoay
         if (activeTab === 'rotate' && previewRotationAngle !== 0) {
             const centerX = canvas.width / 2;
@@ -260,7 +1044,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-        
+
         // Khôi phục lại trạng thái canvas (bỏ xoay)
         ctx.restore();
 
@@ -285,7 +1069,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (activeTab === 'censor') {
             resetCensorState();
         }
-        
+
         canvas.style.cursor = 'default';
         canvas.onmousedown = null;
         canvas.onmousemove = null;
@@ -312,10 +1096,10 @@ document.addEventListener('DOMContentLoaded', () => {
             canvas.onmouseup = handleCensorMouseUp;
             canvas.onmouseleave = handleCensorMouseUp;
         }
-        
+
         drawCanvas();
     }
-    
+
     // --- Lấy tọa độ trên canvas ---
     function getCanvasCoords(e) {
         const rect = canvas.getBoundingClientRect();
@@ -324,7 +1108,7 @@ document.addEventListener('DOMContentLoaded', () => {
             y: e.clientY - rect.top
         };
     }
-    
+
     function canvasToImageCoords(coords) {
         const scale = canvas.width / currentImageState.width;
         return {
@@ -387,12 +1171,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const height = imgHeight * 0.8;
         const x = (imgWidth - width) / 2;
         const y = (imgHeight - height) / 2;
-        
+
         cropRect = { x, y, width, height };
         updateCropInputs();
         applyCropBtn.disabled = false;
     }
-    
+
     function resetCropState() {
         cropRect = null;
         activeCropHandle = null;
@@ -424,7 +1208,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
         ctx.lineWidth = 1;
         ctx.strokeRect(rx, ry, rw, rh);
-        
+
         ctx.beginPath();
         ctx.moveTo(rx + rw / 3, ry);
         ctx.lineTo(rx + rw / 3, ry + rh);
@@ -457,7 +1241,7 @@ document.addEventListener('DOMContentLoaded', () => {
             { id: 'right',       x: rx + rw,     y: ry + rh / 2, cursor: 'ew-resize' }
         ];
     }
-    
+
     function getHandleUnderMouse(canvasX, canvasY) {
         const scale = canvas.width / currentImageState.width;
         const handles = getHandlePositions(cropRect.x * scale, cropRect.y * scale, cropRect.width * scale, cropRect.height * scale);
@@ -526,7 +1310,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Store original values before modification
             const originalX = x;
             const originalY = y;
-            
+
             // Calculate new dimensions based on handle
             switch (handleId) {
                 case 'topLeft':     x = clampedMouseX; y = clampedMouseY; width = right - x; height = bottom - y; break;
@@ -553,7 +1337,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (handleId === 'top' || handleId === 'bottom') x = centerX - width / 2;
                 if (handleId === 'left' || handleId === 'right') y = centerY - height / 2;
             }
-            
+
             // Handle flipping (when a handle is dragged past its opposite edge)
             if (width < 0) {
                 x += width;
@@ -574,12 +1358,12 @@ document.addEventListener('DOMContentLoaded', () => {
         updateCropInputs();
         drawCanvas();
     }
-    
+
     function handleCropMouseUp() {
         isDraggingCropBox = false;
         activeCropHandle = null;
     }
-    
+
     function updateCropInputs() {
         if (!cropRect) return;
         cropInputs.x.value = Math.round(cropRect.x);
@@ -587,7 +1371,7 @@ document.addEventListener('DOMContentLoaded', () => {
         cropInputs.width.value = Math.round(cropRect.width);
         cropInputs.height.value = Math.round(cropRect.height);
     }
-    
+
     function updateCropRectFromInputs() {
         if (!cropRect) return;
         cropRect.x = parseInt(cropInputs.x.value, 10) || 0;
@@ -596,7 +1380,7 @@ document.addEventListener('DOMContentLoaded', () => {
         cropRect.height = parseInt(cropInputs.height.value, 10) || 0;
         drawCanvas();
     }
-    
+
     function setCropAspectRatio(ratioStr, target) {
         aspectBtns.forEach(btn => btn.classList.remove('active'));
         target.classList.add('active');
@@ -647,19 +1431,19 @@ document.addEventListener('DOMContentLoaded', () => {
             rotationValue.textContent = previewRotationAngle;
             drawCanvas();
         });
-        
+
         applyRotateBtn.addEventListener('click', () => {
              if (previewRotationAngle !== 0) {
                 applyRotation(previewRotationAngle);
              }
         });
-        
+
         resetRotateBtn.addEventListener('click', resetRotationPreview);
-        
+
         rotateLeftBtn.addEventListener('click', () => applyRotation(-90));
         rotateRightBtn.addEventListener('click', () => applyRotation(90));
     }
-    
+
     function resetRotationPreview() {
         previewRotationAngle = 0;
         rotationSlider.value = 0;
@@ -696,7 +1480,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         newImage.src = tempCanvas.toDataURL();
     }
-    
+
     // --- Logic Công cụ: Làm mờ (CENSOR - PIXELATE) ---
     function setupCensorControls() {
         pixelateSlider.addEventListener('input', () => {
@@ -758,7 +1542,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleCensorMouseUp() {
         if (!isDrawingCensor || !currentCensorRect) return;
         isDrawingCensor = false;
-        
+
         let finalRect = { ...currentCensorRect };
         if (finalRect.width < 0) {
             finalRect.x += finalRect.width;
@@ -781,7 +1565,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (censorAreas.length === 0) return;
 
         const pixelSize = parseInt(pixelateSlider.value, 10);
-        
+
         const tempCanvas = document.createElement('canvas');
         tempCanvas.width = currentImageState.width;
         tempCanvas.height = currentImageState.height;
@@ -806,7 +1590,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const r = data[pixelIndex];
                     const g = data[pixelIndex + 1];
                     const b = data[pixelIndex + 2];
-                    
+
                     tempCtx.fillStyle = `rgb(${r},${g},${b})`;
                     tempCtx.fillRect(ix + i, iy + j, pixelSize, pixelSize);
                 }
@@ -816,11 +1600,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const newImage = new Image();
         newImage.onload = () => {
             addHistoryState({ image: newImage, width: newImage.width, height: newImage.height });
-            resetCensorState(); 
+            resetCensorState();
         };
         newImage.src = tempCanvas.toDataURL();
     }
-    
+
     // --- Logic Công cụ: Xuất ảnh ---
     function setupExportControls() {
         const setQualityVisibility = () => {
@@ -840,12 +1624,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // Set initial visibility on load
         setQualityVisibility();
     }
-    
+
     function updateEstimatedSize() {
         if (!currentImageState) return;
         const format = formatSelect.value;
         const quality = format === 'image/jpeg' ? parseFloat(qualitySlider.value) : undefined;
-        
+
         const tempCanvas = document.createElement('canvas');
         tempCanvas.width = currentImageState.width;
         tempCanvas.height = currentImageState.height;
@@ -870,14 +1654,14 @@ document.addEventListener('DOMContentLoaded', () => {
     function downloadImage() {
         const format = formatSelect.value;
         const quality = parseFloat(qualitySlider.value);
-        
+
         const tempCanvas = document.createElement('canvas');
         tempCanvas.width = currentImageState.width;
         tempCanvas.height = currentImageState.height;
         tempCanvas.getContext('2d').drawImage(currentImageState.image, 0, 0);
 
         const dataUrl = tempCanvas.toDataURL(format, quality);
-        
+
         const link = document.createElement('a');
         const extension = format.split('/')[1];
         link.download = originalFilename.replace(/\.[^/.]+$/, "") + `_edited.${extension}`;
@@ -885,7 +1669,7 @@ document.addEventListener('DOMContentLoaded', () => {
         link.click();
     }
 
-
     // Khởi chạy ứng dụng
     init();
+  }
 });
