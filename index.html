@@ -3,12 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bảng điều khiển đa năng</title>
+  <title>Công cụ trực tuyến</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="qrcode/style.css">
-  <link rel="stylesheet" href="hinhanh/style.css">
+<link rel="stylesheet" href="/index.css">
 </head>
 <body>
 
@@ -20,7 +19,7 @@
           <h5 class="modal-title" id="authModalLabel">Đăng nhập</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body">  
+        <div class="modal-body">
           <!-- Login Form -->
           <div id="loginForm">
             <div class="mb-3">
@@ -77,7 +76,8 @@
 
           <!-- Reset Password Form -->
           <div id="resetForm" class="hidden">
-              <h5 class="mb-3">Nhập OTP và mật khẩu mới</h5>
+              <h5 class="mb-3">Đặt lại mật khẩu</h5>
+              <p class="text-muted small">Một mã OTP đã được gửi đến email <strong id="resetEmailDisplay"></strong>. Vui lòng nhập mã đó bên dưới.</p>
               <div class="mb-3">
                   <label for="otpCode" class="form-label">Mã OTP</label>
                   <input type="text" class="form-control" id="otpCode" inputmode="numeric" autocomplete="one-time-code">
@@ -87,7 +87,13 @@
                   <input type="password" class="form-control" id="newPassword" autocomplete="new-password">
               </div>
               <button class="btn btn-info w-100" onclick="handleResetPassword()">Đặt lại mật khẩu</button>
-              <div id="resetMessage" class="mt-3 text-danger"></div>
+              <div id="resetMessage" class="mt-3"></div>
+               <div class="d-flex justify-content-between align-items-center mt-3">
+                  <div id="resendOtpContainer" class="text-muted small">
+                      <!-- JS will populate this -->
+                  </div>
+                  <a href="#" class="btn btn-link btn-sm" onclick="showAuthForm('loginForm')">Quay lại đăng nhập</a>
+              </div>
           </div>
           
           <!-- Device Verification Form -->
@@ -107,10 +113,41 @@
       </div>
     </div>
   </div>
+  
+  <!-- Change Password Modal -->
+  <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="changePasswordModalLabel">Đổi mật khẩu</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="currentPassword" class="form-label">Mật khẩu hiện tại</label>
+            <input type="password" class="form-control" id="currentPassword" autocomplete="current-password">
+          </div>
+          <div class="mb-3">
+            <label for="changeNewPassword" class="form-label">Mật khẩu mới</label>
+            <input type="password" class="form-control" id="changeNewPassword" autocomplete="new-password">
+          </div>
+          <div class="mb-3">
+            <label for="confirmNewPassword" class="form-label">Xác nhận mật khẩu mới</label>
+            <input type="password" class="form-control" id="confirmNewPassword" autocomplete="new-password">
+          </div>
+          <div id="changePasswordMessage" class="mt-3"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+          <button type="button" class="btn btn-primary" onclick="handleChangePassword()">Lưu thay đổi</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
     <div class="container-fluid">
-      <a class="navbar-brand fw-bold" href="#">Bảng điều khiển</a>
+      <a class="navbar-brand fw-bold" href="#">Công cụ trực tuyến</a>
       <div id="userActions" class="d-flex align-items-center">
         <!-- Populated by JS -->
       </div>
@@ -124,10 +161,10 @@
         <button class="nav-link" id="home-tab" data-bs-toggle="tab" data-bs-target="#home-tab-pane" type="button" role="tab" aria-controls="home-tab-pane" aria-selected="false">Thông báo</button>
       </li>
       <li class="nav-item" role="presentation" id="bhyt-tab-li" style="display: none;">
-        <button class="nav-link" id="bhyt-tab" data-bs-toggle="tab" data-bs-target="#bhyt-tab-pane" type="button" role="tab" aria-controls="bhyt-tab-pane" aria-selected="false">Dữ liệu BHYT</button>
+        <button class="nav-link" id="bhyt-tab" data-bs-toggle="tab" data-bs-target="#bhyt-tab-pane" type="button" role="tab" aria-controls="bhyt-tab-pane" aria-selected="false">Dữ liệu đáo hạn BHYT</button>
       </li>
       <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="qrcode-tab" data-bs-toggle="tab" data-bs-target="#qrcode-tab-pane" type="button" role="tab" aria-controls="qrcode-tab-pane" aria-selected="true">Tạo mã QR</button>
+        <button class="nav-link active" id="qrcode-tab" data-bs-toggle="tab" data-bs-target="#qrcode-tab-pane" type="button" role="tab" aria-controls="qrcode-tab-pane" aria-selected="true">Công cụ QR Code</button>
       </li>
       <li class="nav-item" role="presentation">
         <button class="nav-link" id="hinhanh-tab" data-bs-toggle="tab" data-bs-target="#hinhanh-tab-pane" type="button" role="tab" aria-controls="hinhanh-tab-pane" aria-selected="false">Chỉnh sửa ảnh</button>
@@ -150,26 +187,57 @@
       <!-- BHYT Tab -->
       <div class="tab-pane fade" id="bhyt-tab-pane" role="tabpanel" aria-labelledby="bhyt-tab" tabindex="0">
         <div class="p-3">
-            <h4>Danh sách BHYT đến hạn</h4>
+            <h4>Danh sách BHYT đến hạn theo từng nhân viên thu</h4>
             <div id="bhytDataArea">
-            <div class="mb-3 mt-3">
-                <button class="btn btn-primary me-2" onclick="loadData('dueSoon')">Sắp hết hạn (±30 ngày)</button>
-                <button class="btn btn-warning me-2" onclick="loadData('expiredRecently')">Đã hết hạn (30–90 ngày)</button>
-                <select id="monthSelect" class="form-select d-inline w-auto" onchange="loadData('byMonth')">
-                <option value="">Lọc theo tháng hết hạn</option>
-                </select>
-            </div>
-            <div id="loading" class="text-muted mb-2">Đang tải dữ liệu...</div>
-            <div class="table-responsive">
-                <table class="table table-bordered table-striped">
-                <thead>
-                    <tr>
-                    <th>Hạn thẻ đến</th><th>Họ tên</th><th>Giới tính</th><th>Ngày sinh</th><th>Số điện thoại</th><th>Địa chỉ LH</th><th>Mã PB</th><th>Số CMND/CCCD</th><th>Mã BV</th><th>Số KCB</th><th>Mã ĐV</th>
-                    </tr>
-                </thead>
-                <tbody id="dataBody"></tbody>
-                </table>
-            </div>
+              <div class="mb-3 mt-3 d-flex flex-wrap align-items-center">
+                  <button class="btn btn-primary me-2 mb-2" onclick="loadData('dueSoon')">Sắp hết hạn (±30 ngày)</button>
+                  <button class="btn btn-warning me-2 mb-2" onclick="loadData('expiredRecently')">Đã hết hạn (30–90 ngày)</button>
+                  <select id="monthSelect" class="form-select d-inline w-auto me-2 mb-2" onchange="loadData('byMonth')">
+                      <option value="">Lọc theo tháng hết hạn</option>
+                  </select>
+                  <button class="btn btn-secondary me-2 mb-2" onclick="clearAllFilters()">Xoá bộ lọc</button>
+                  <button class="btn btn-success me-2 mb-2" onclick="exportToExcel()"><i class="bi bi-file-earmark-excel"></i> Xuất Excel</button>
+              </div>
+              <div id="loading" class="text-muted mb-2">Đang tải dữ liệu...</div>
+              <div class="table-responsive">
+                  <table class="table table-bordered table-striped">
+                      <thead>
+                          <tr>
+                              <th>Hạn thẻ đến</th>
+                              <th>Họ tên</th>
+                              <th>Giới tính</th>
+                              <th>Ngày sinh</th>
+                              <th>Số điện thoại</th>
+                              <th>Địa chỉ LH</th>
+                              <th>Mã PB</th>
+                              <th>Số CMND/CCCD</th>
+                              <th>Mã BV</th>
+                              <th>Số KCB</th>
+                              <th>Mã ĐV</th>
+                          </tr>
+                          <tr class="filter-row">
+                              <th><input type="text" class="form-control form-control-sm" id="filterHanThe" placeholder=">, <, =dd/mm/yyyy" onkeyup="applyFilters()"></th>
+                              <th><input type="text" class="form-control form-control-sm" id="filterHoTen" placeholder="Lọc tên..." onkeyup="applyFilters()"></th>
+                              <th>
+                                  <select id="filterGioiTinh" class="form-select form-select-sm" onchange="applyFilters()">
+                                      <option value="">Tất cả</option>
+                                      <option value="Nam">Nam</option>
+                                      <option value="Nữ">Nữ</option>
+                                  </select>
+                              </th>
+                              <th><input type="text" class="form-control form-control-sm" id="filterNgaySinh" placeholder=">, <, =dd/mm/yyyy" onkeyup="applyFilters()"></th>
+                              <th><input type="text" class="form-control form-control-sm" id="filterSoDienThoai" placeholder="Lọc SĐT..." onkeyup="applyFilters()"></th>
+                              <th><input type="text" class="form-control form-control-sm" id="filterDiaChi" placeholder="Lọc địa chỉ..." onkeyup="applyFilters()"></th>
+                              <th><input type="text" class="form-control form-control-sm" id="filterMaPb" placeholder="Lọc mã..." onkeyup="applyFilters()"></th>
+                              <th><input type="text" class="form-control form-control-sm" id="filterCmnd" placeholder="Lọc CCCD..." onkeyup="applyFilters()"></th>
+                              <th><input type="text" class="form-control form-control-sm" id="filterMaBv" placeholder="Lọc mã..." onkeyup="applyFilters()"></th>
+                              <th><input type="text" class="form-control form-control-sm" id="filterSoKcb" placeholder="Lọc số..." onkeyup="applyFilters()"></th>
+                              <th><input type="text" class="form-control form-control-sm" id="filterMaDvi" placeholder="Lọc mã..." onkeyup="applyFilters()"></th>
+                          </tr>
+                      </thead>
+                      <tbody id="dataBody"></tbody>
+                  </table>
+              </div>
             </div>
         </div>
       </div>
@@ -178,22 +246,25 @@
       <div class="tab-pane fade show active" id="qrcode-tab-pane" role="tabpanel" aria-labelledby="qrcode-tab" tabindex="0">
         <div class="qrcode-app-wrapper">
           <div class="container">
-              <h1>Trình tạo mã QR Code</h1>
-              <p>Chọn loại mã bạn muốn tạo và điền thông tin.</p>
+              <h1>Công cụ mã QR Code</h1>
+              <p>Chọn chức năng bạn muốn sử dụng.</p>
               
               <!-- QR Type Selection Tabs -->
               <ul class="nav nav-pills nav-fill mb-3" id="qr-type-pills" role="tablist">
                 <li class="nav-item" role="presentation">
-                  <button class="nav-link active" id="qr-text-tab" data-bs-toggle="pill" data-bs-target="#qr-text-pane" type="button" role="tab" aria-controls="qr-text-pane" aria-selected="true"><i class="bi bi-fonts me-2"></i>Văn bản</button>
+                  <button class="nav-link active" id="qr-text-tab" data-bs-toggle="pill" data-bs-target="#qr-text-pane" type="button" role="tab" aria-controls="qr-text-pane" aria-selected="true"><i class="bi bi-fonts me-2"></i>Tạo: Văn bản</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                  <button class="nav-link" id="qr-url-tab" data-bs-toggle="pill" data-bs-target="#qr-url-pane" type="button" role="tab" aria-controls="qr-url-pane" aria-selected="false"><i class="bi bi-link-45deg me-2"></i>URL</button>
+                  <button class="nav-link" id="qr-url-tab" data-bs-toggle="pill" data-bs-target="#qr-url-pane" type="button" role="tab" aria-controls="qr-url-pane" aria-selected="false"><i class="bi bi-link-45deg me-2"></i>Tạo: URL</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                  <button class="nav-link" id="qr-wifi-tab" data-bs-toggle="pill" data-bs-target="#qr-wifi-pane" type="button" role="tab" aria-controls="qr-wifi-pane" aria-selected="false"><i class="bi bi-wifi me-2"></i>WiFi</button>
+                  <button class="nav-link" id="qr-wifi-tab" data-bs-toggle="pill" data-bs-target="#qr-wifi-pane" type="button" role="tab" aria-controls="qr-wifi-pane" aria-selected="false"><i class="bi bi-wifi me-2"></i>Tạo: WiFi</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                  <button class="nav-link" id="qr-vcard-tab" data-bs-toggle="pill" data-bs-target="#qr-vcard-pane" type="button" role="tab" aria-controls="qr-vcard-pane" aria-selected="false"><i class="bi bi-person-badge me-2"></i>Danh thiếp</button>
+                  <button class="nav-link" id="qr-vcard-tab" data-bs-toggle="pill" data-bs-target="#qr-vcard-pane" type="button" role="tab" aria-controls="qr-vcard-pane" aria-selected="false"><i class="bi bi-person-badge me-2"></i>Tạo: Danh thiếp</button>
+                </li>
+                 <li class="nav-item" role="presentation">
+                  <button class="nav-link" id="qr-read-tab" data-bs-toggle="pill" data-bs-target="#qr-read-pane" type="button" role="tab" aria-controls="qr-read-pane" aria-selected="false"><i class="bi bi-upc-scan me-2"></i>Đọc Mã QR</button>
                 </li>
               </ul>
 
@@ -238,12 +309,39 @@
                         </div>
                     </div>
                 </div>
+                <!-- QR Reader Pane -->
+                <div class="tab-pane fade" id="qr-read-pane" role="tabpanel" aria-labelledby="qr-read-tab">
+                  <div id="qr-reader-uploader" class="upload-label-qr">
+                    <label for="qr-upload-input" class="upload-label-internal">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                      <span>Nhấp để tải lên hoặc kéo & thả ảnh QR</span>
+                    </label>
+                    <input type="file" id="qr-upload-input" accept="image/*" class="hidden-input"/>
+                  </div>
+                  <div id="qr-reader-result-container" style="display: none;">
+                      <h4>Nội dung mã QR:</h4>
+                      <pre id="qr-reader-result-text"></pre>
+                  </div>
+                </div>
               </div>
 
               <button id="generate-btn" class="btn btn-primary w-100 mt-4">Tạo mã QR</button>
               <div id="qrcode-container" class="qrcode-container"></div>
               <p id="status-message"></p>
           </div>
+        </div>
+        <div class="tool-description mt-5 p-4 bg-light rounded">
+          <h2 class="h4">Giới thiệu Công cụ Mã QR Đa Năng</h2>
+          <p>Công cụ mã QR của chúng tôi là một giải pháp toàn diện, miễn phí và dễ sử dụng cho mọi nhu cầu liên quan đến QR code. Dù bạn cần <strong>tạo mã QR</strong> cho chiến dịch marketing, chia sẻ thông tin cá nhân, hay đơn giản là <strong>đọc mã QR</strong> từ một hình ảnh, chúng tôi đều có thể đáp ứng.</p>
+          <h3 class="h5 mt-3">Các tính năng chính:</h3>
+          <ul>
+            <li><strong>Tạo mã QR cho Văn bản:</strong> Chuyển đổi bất kỳ đoạn văn bản, ghi chú, hoặc tin nhắn nào thành mã QR một cách nhanh chóng.</li>
+            <li><strong>Tạo mã QR cho URL/Link:</strong> Dễ dàng tạo QR code để chia sẻ liên kết website, trang sản phẩm, hoặc mạng xã hội.</li>
+            <li><strong>Tạo mã QR WiFi:</strong> Giúp bạn bè và khách hàng kết nối vào mạng WiFi của bạn chỉ với một lần quét, không cần nhập mật khẩu.</li>
+            <li><strong>Tạo mã QR Danh thiếp (vCard):</strong> Tạo danh thiếp kỹ thuật số chứa thông tin liên hệ (tên, số điện thoại, email) để chia sẻ một cách chuyên nghiệp.</li>
+            <li><strong>Đọc mã QR từ ảnh:</strong> Bạn có một ảnh chứa mã QR? Chỉ cần tải ảnh lên, công cụ của chúng tôi sẽ <strong>quét và giải mã nội dung QR</strong> ngay lập tức.</li>
+          </ul>
+          <p>Đây là công cụ QR trực tuyến hoàn hảo cho cá nhân, doanh nghiệp nhỏ và các nhà tiếp thị muốn tận dụng sức mạnh của mã QR một cách hiệu quả và an toàn.</p>
         </div>
       </div>
 
@@ -257,7 +355,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
                     <span>Nhấp để tải lên hoặc kéo &amp; thả</span>
                   </label>
-                  <input type="file" id="upload-input" accept="image/*,.heic,.heif" />
+                  <input type="file" id="upload-input" accept="image/*,.heic,.heif" class="hidden" />
                 </div>
                 <div id="editor" class="editor-section hidden">
                   <div class="canvas-container"><canvas id="canvas"></canvas></div>
@@ -271,10 +369,10 @@
                         <button class="tab-btn" data-tab="export">Xuất ảnh</button>
                       </nav>
                       <div id="resize-controls" class="tab-content active"><h3>Đổi kích thước ảnh</h3><div class="control-group"><label for="width-input">Rộng:</label><input type="number" id="width-input" min="1" /></div><div class="control-group"><label for="height-input">Cao:</label><input type="number" id="height-input" min="1" /></div><div class="control-group checkbox-group"><input type="checkbox" id="aspect-ratio-lock" checked><label for="aspect-ratio-lock">Giữ tỷ lệ</label></div><button id="apply-resize-btn" class="action-btn">Áp dụng</button></div>
-                      <div id="crop-controls" class="tab-content"><h3>Cắt ảnh</h3><p class="instructions">Nhấp và kéo trên ảnh để chọn vùng cắt.</p><div class="control-group"><label>Tỷ lệ:</label><div class="aspect-ratio-presets"><button class="aspect-btn active" data-ratio="free">Tự do</button><button class="aspect-btn" data-ratio="1,1">Vuông</button><button class="aspect-btn" data-ratio="4,3">4:3</button><button class="aspect-btn" data-ratio="3,4">3:4</button><button class="aspect-btn" data-ratio="16,9">16:9</button><button class="aspect-btn" data-ratio="9,16">9:16</button></div></div><div class="crop-inputs"><div class="control-group"><label for="crop-x">X:</label><input type="number" id="crop-x" /></div><div class="control-group"><label for="crop-y">Y:</label><input type="number" id="crop-y" /></div><div class="control-group"><label for="crop-width">Rộng:</label><input type="number" id="crop-width" /></div><div class="control-group"><label for="crop-height">Cao:</label><input type="number" id="crop-height" /></div></div><button id="apply-crop-btn" class="action-btn" disabled>Áp dụng cắt</button></div>
-                      <div id="rotate-controls" class="tab-content"><h3>Xoay ảnh</h3><p class="instructions">Xoay ảnh 90 độ.</p><div class="control-group-row"><button id="rotate-left-btn" class="action-btn secondary-style">Xoay Trái 90°</button><button id="rotate-right-btn" class="action-btn secondary-style">Xoay Phải 90°</button></div></div>
+                      <div id="crop-controls" class="tab-content"><h3>Cắt ảnh</h3><p class="instructions">Kéo các góc/cạnh để đổi kích thước hoặc kéo từ giữa để di chuyển khung cắt.</p><div class="control-group"><label>Tỷ lệ:</label><div class="aspect-ratio-presets"><button class="aspect-btn active" data-ratio="free">Tự do</button><button class="aspect-btn" data-ratio="1,1">Vuông</button><button class="aspect-btn" data-ratio="4,3">4:3</button><button class="aspect-btn" data-ratio="3,4">3:4</button><button class="aspect-btn" data-ratio="16,9">16:9</button><button class="aspect-btn" data-ratio="9,16">9:16</button></div></div><div class="crop-inputs"><div class="control-group"><label for="crop-x">X:</label><input type="number" id="crop-x" /></div><div class="control-group"><label for="crop-y">Y:</label><input type="number" id="crop-y" /></div><div class="control-group"><label for="crop-width">Rộng:</label><input type="number" id="crop-width" /></div><div class="control-group"><label for="crop-height">Cao:</label><input type="number" id="crop-height" /></div></div><button id="apply-crop-btn" class="action-btn" disabled>Áp dụng cắt</button></div>
+                      <div id="rotate-controls" class="tab-content"><h3>Xoay ảnh</h3><p class="instructions">Sử dụng thanh trượt để tinh chỉnh góc xoay hoặc các nút để xoay nhanh.</p><div class="control-group"><label for="rotation-slider">Góc xoay (tinh chỉnh): <span id="rotation-value">0</span>°</label><input type="range" id="rotation-slider" min="-45" max="45" step="1" value="0" class="form-range" style="width: 100%;"></div><div class="control-group-row mt-3"><button id="apply-rotate-btn" class="action-btn">Áp dụng xoay</button><button id="reset-rotate-btn" class="action-btn secondary-style">Reset góc xoay</button></div><hr style="margin: 2rem 0;"><div class="control-group-row"><button id="rotate-left-btn" class="action-btn secondary-style">Xoay Trái 90°</button><button id="rotate-right-btn" class="action-btn secondary-style">Xoay Phải 90°</button></div></div>
                       <div id="censor-controls" class="tab-content"><h3>Che thông tin (Pixelate)</h3><p class="instructions">Nhấp và kéo trên ảnh để chọn vùng cần làm mờ.</p><div class="control-group"><label for="pixelate-intensity-slider">Kích thước pixel: <span id="pixelate-value">10</span>px</label><input type="range" id="pixelate-intensity-slider" min="4" max="40" step="2" value="10" /></div><button id="apply-censor-btn" class="action-btn" disabled>Áp dụng làm mờ</button><p class="instructions small-text">Lưu ý: Hành động này sẽ áp dụng hiệu ứng trực tiếp lên ảnh.</p></div>
-                      <div id="export-controls" class="tab-content"><h3>Xuất ảnh</h3><div class="control-group"><label for="format-select">Định dạng:</label><select id="format-select"><option value="image/png">PNG</option><option value="image/jpeg">JPEG</option><option value="image/webp">WebP</option></select></div><div class="control-group" id="quality-control"><label for="quality-slider">Chất lượng: <span id="quality-value">0.9</span></label><input type="range" id="quality-slider" min="0.1" max="1" step="0.05" value="0.9" /></div><div class="control-group"><p class="file-size-info">Kích thước ước tính: <strong id="estimated-size">...</strong></p></div><button id="download-btn" class="action-btn">Tải ảnh</button></div>
+                      <div id="export-controls" class="tab-content"><h3>Xuất ảnh</h3><div class="control-group"><label for="format-select">Định dạng:</label><select id="format-select"><option value="image/jpeg" selected>JPEG</option><option value="image/png">PNG</option><option value="image/webp">WebP</option></select></div><div class="control-group" id="quality-control"><label for="quality-slider">Chất lượng: <span id="quality-value">1</span></label><input type="range" id="quality-slider" min="0.1" max="1" step="0.05" value="1" /></div><div class="control-group"><p class="file-size-info">Kích thước ước tính: <strong id="estimated-size">...</strong></p></div><button id="download-btn" class="action-btn">Tải ảnh</button></div>
                     </div>
                     <div class="controls-footer"><div class="history-buttons"><button id="undo-btn" class="secondary-btn" disabled>Hoàn tác</button><button id="redo-btn" class="secondary-btn" disabled>Làm lại</button></div><button id="reset-btn" class="reset-btn">Tải ảnh mới</button></div>
                   </aside>
@@ -282,15 +380,30 @@
               </main>
             </div>
         </div>
+        <div class="tool-description mt-5 p-4 bg-light rounded">
+          <h2 class="h4">Giới thiệu Trình Chỉnh Sửa Ảnh Online Miễn Phí</h2>
+          <p>Trình chỉnh sửa ảnh của chúng tôi cung cấp các công cụ thiết yếu để bạn có thể xử lý hình ảnh một cách nhanh chóng ngay trên trình duyệt mà không cần cài đặt phần mềm. Đây là giải pháp hoàn hảo để thực hiện các thao tác <strong>chỉnh sửa ảnh cơ bản</strong> một cách hiệu quả.</p>
+          <h3 class="h5 mt-3">Các tính năng chính:</h3>
+          <ul>
+            <li><strong>Thay đổi kích thước ảnh:</strong> Dễ dàng điều chỉnh chiều rộng và chiều cao của ảnh theo pixel, có hoặc không giữ tỷ lệ khung hình gốc.</li>
+            <li><strong>Cắt ảnh online:</strong> Công cụ <strong>cắt ảnh</strong> linh hoạt với các tỷ lệ đặt trước (vuông, 16:9, 4:3) hoặc cắt tự do để lấy đúng khung hình bạn muốn.</li>
+            <li><strong>Xoay và lật ảnh:</strong> Xoay ảnh theo góc tùy chỉnh hoặc xoay nhanh 90 độ, giúp điều chỉnh hướng ảnh một cách chính xác.</li>
+            <li><strong>Làm mờ / Che thông tin (Pixelate):</strong> Bảo mật thông tin nhạy cảm như khuôn mặt, biển số xe, hoặc văn bản bằng cách <strong>làm mờ vùng ảnh</strong> bạn chọn.</li>
+            <li><strong>Làm giảm dung lượng ảnh:</strong> Giảm dung lương ảnh, xuất ảnh JPEG với dung lượng thấp hơn theo ý muốn.</li>
+            <li><strong>Xuất ảnh chất lượng cao:</strong> Lưu tác phẩm của bạn dưới các định dạng phổ biến như PNG, JPEG, hoặc WebP với tùy chọn điều chỉnh chất lượng.</li>
+          </ul>
+          <p>Với giao diện trực quan và các tính năng mạnh mẽ, công cụ chỉnh sửa ảnh miễn phí này là người bạn đồng hành lý tưởng cho mọi nhu cầu xử lý ảnh hàng ngày.</p>
+        </div>
       </div>
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/heic2any/dist/heic2any.min.js"></script>
-  <script src="qrcode/script.js"></script>
-  <script src="hinhanh/script.js"></script>
+  <script src="script.js"></script>
   <script>
     const CONFIG = {
       API_URL: 'https://script.google.com/macros/s/AKfycbwupeI_-uhLqsnv1HiHAnQvjEojHpXra-tZoxJt_Md8-WesJxz8Eif3Vz9WpmOv3sXs/exec'
@@ -305,6 +418,9 @@
     let currentEmail = '';
     let tempLoginCredentials = {}; 
     let authModalInstance;
+    let changePasswordModalInstance;
+    let otpTimerInterval;
+
 
     function showAuthForm(formId) {
         const modalTitle = document.getElementById('authModalLabel');
@@ -321,10 +437,14 @@
     }
 
     async function handleLogin() {
-      const email = document.getElementById('loginEmail').value.trim();
+      let email = document.getElementById('loginEmail').value.trim();
       const password = document.getElementById('loginPassword').value.trim();
       const loginMessage = document.getElementById('loginMessage');
       loginMessage.innerText = '';
+
+      if (email && !email.includes('@')) {
+        email += '@gmail.com';
+      }
 
       if (!email || !password) {
         loginMessage.innerText = 'Vui lòng nhập email và mật khẩu.';
@@ -384,30 +504,88 @@
         }
     }
     
-    async function handleForgot() {
-        const email = document.getElementById('forgotEmail').value.trim();
-        const forgotMessage = document.getElementById('forgotMessage');
-        forgotMessage.innerText = '';
+    function startOtpCountdown(duration = 60) {
+        if (otpTimerInterval) clearInterval(otpTimerInterval);
 
-        if (!email) { forgotMessage.innerText = 'Vui lòng nhập email.'; return; }
-        currentEmail = email;
+        const container = document.getElementById('resendOtpContainer');
+        let timer = duration;
+
+        const updateTimer = () => {
+            if (timer > 0) {
+                container.innerHTML = `<span>Gửi lại mã sau ${timer}s</span>`;
+                timer--;
+            } else {
+                clearInterval(otpTimerInterval);
+                container.innerHTML = `<a href="#" onclick="event.preventDefault(); handleForgot(true);">Gửi lại mã OTP</a>`;
+            }
+        };
+        
+        updateTimer(); // Initial call
+        otpTimerInterval = setInterval(updateTimer, 1000);
+    }
+
+    async function handleForgot(isResend = false) {
+        const emailInput = document.getElementById('forgotEmail');
+        const messageContainer = isResend ? document.getElementById('resetMessage') : document.getElementById('forgotMessage');
+        
+        // Clear previous messages
+        document.getElementById('forgotMessage').innerText = '';
+        document.getElementById('resetMessage').innerText = '';
+        
+        const email = isResend ? currentEmail : emailInput.value.trim();
+
+        if (!email) {
+            messageContainer.innerText = 'Vui lòng nhập email.';
+            messageContainer.className = 'mt-3 text-danger';
+            return;
+        }
+        
+        if (!isResend) {
+            currentEmail = email;
+        }
+        
+        if (isResend) {
+            document.getElementById('resendOtpContainer').innerHTML = `<span>Đang gửi...</span>`;
+        } else {
+            messageContainer.innerText = 'Đang gửi...';
+            messageContainer.className = 'mt-3 text-muted';
+        }
+        
         const body = `action=requestPasswordOtp&email=${encodeURIComponent(email)}`;
         try {
-            const res = await fetch(CONFIG.API_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body });
+            const res = await fetch(CONFIG.API_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body });
             const data = await res.json();
+            
             if (data.success) {
-                forgotMessage.className = 'mt-3 text-success';
-                forgotMessage.innerText = data.message;
-                showAuthForm('resetForm');
+                if (!isResend) {
+                    document.getElementById('resetEmailDisplay').textContent = email;
+                    showAuthForm('resetForm');
+                }
+                // Show success message in the reset form's message area
+                const resetMsgEl = document.getElementById('resetMessage');
+                resetMsgEl.innerText = data.message;
+                resetMsgEl.className = 'mt-3 text-success';
+                
+                startOtpCountdown();
             } else {
-                forgotMessage.className = 'mt-3 text-danger';
-                forgotMessage.innerText = data.error;
+                // Show error in the appropriate message area
+                messageContainer.className = 'mt-3 text-danger';
+                messageContainer.innerText = data.error;
+                // If it was a resend attempt, restore the resend link
+                if (isResend) {
+                    document.getElementById('resendOtpContainer').innerHTML = `<a href="#" onclick="event.preventDefault(); handleForgot(true);">Gửi lại mã OTP</a>`;
+                }
             }
         } catch (error) {
             console.error("Forgot password error:", error);
-            forgotMessage.innerText = 'Lỗi kết nối. Vui lòng thử lại.';
+            messageContainer.innerText = 'Lỗi kết nối. Vui lòng thử lại.';
+            messageContainer.className = 'mt-3 text-danger';
+            if (isResend) {
+                 document.getElementById('resendOtpContainer').innerHTML = `<a href="#" onclick="event.preventDefault(); handleForgot(true);">Gửi lại mã OTP</a>`;
+            }
         }
     }
+
 
     async function handleResetPassword() {
         const otp = document.getElementById('otpCode').value.trim();
@@ -415,7 +593,7 @@
         const resetMessage = document.getElementById('resetMessage');
         resetMessage.innerText = '';
         if (!otp || !newPassword) { resetMessage.innerText = 'Vui lòng nhập OTP và mật khẩu mới.'; return; }
-        if (!/^(?=.*[A-Z])(?=.*\d).{8,}$/.test(newPassword)) { resetMessage.innerText = 'Mật khẩu mới phải có ít nhất 8 ký tự, bao gồm ít nhất 1 chữ hoa và 1 chữ số.'; return; }
+        if (!/^(?=.*[A-Z])(?=.*\d).{8,}$/.test(newPassword)) { resetMessage.innerText = 'Mật khẩu mới phải có ít nhất 1 chữ hoa và 1 chữ số.'; return; }
         const body = `action=verifyOtpAndResetPassword&email=${encodeURIComponent(currentEmail)}&otp=${encodeURIComponent(otp)}&newPassword=${encodeURIComponent(newPassword)}`;
         try {
             const res = await fetch(CONFIG.API_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body });
@@ -457,6 +635,67 @@
         }
     }
 
+    async function handleChangePassword() {
+        const currentPassword = document.getElementById('currentPassword').value;
+        const newPassword = document.getElementById('changeNewPassword').value;
+        const confirmPassword = document.getElementById('confirmNewPassword').value;
+        const messageEl = document.getElementById('changePasswordMessage');
+        messageEl.textContent = '';
+        messageEl.className = 'mt-3';
+        
+        if (!currentPassword || !newPassword || !confirmPassword) {
+            messageEl.textContent = 'Vui lòng điền đầy đủ các trường.';
+            messageEl.classList.add('text-danger');
+            return;
+        }
+        
+        if (newPassword !== confirmPassword) {
+            messageEl.textContent = 'Mật khẩu mới không khớp.';
+            messageEl.classList.add('text-danger');
+            return;
+        }
+
+        if (!/^(?=.*[A-Z])(?=.*\d).{8,}$/.test(newPassword)) {
+            messageEl.textContent = 'Mật khẩu mới phải có ít nhất 1 chữ hoa và 1 chữ số.';
+            messageEl.classList.add('text-danger');
+            return;
+        }
+        
+        const user = JSON.parse(localStorage.getItem('bhyt_user') || '{}');
+        if (!user.sessionId) {
+            alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+            logout();
+            return;
+        }
+        
+        const body = `action=changePassword&sessionId=${encodeURIComponent(user.sessionId)}&currentPassword=${encodeURIComponent(currentPassword)}&newPassword=${encodeURIComponent(newPassword)}`;
+        
+        try {
+            const res = await fetch(CONFIG.API_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body });
+            const data = await res.json();
+            
+            if (data.success) {
+                messageEl.textContent = data.message;
+                messageEl.classList.add('text-success');
+                setTimeout(() => {
+                    changePasswordModalInstance.hide();
+                    // Clear fields after closing
+                    document.getElementById('currentPassword').value = '';
+                    document.getElementById('changeNewPassword').value = '';
+                    document.getElementById('confirmNewPassword').value = '';
+                    messageEl.textContent = '';
+                }, 2000);
+            } else {
+                messageEl.textContent = data.error || 'Đã xảy ra lỗi.';
+                messageEl.classList.add('text-danger');
+            }
+        } catch (error) {
+            console.error('Change password error:', error);
+            messageEl.textContent = 'Lỗi kết nối. Vui lòng thử lại.';
+            messageEl.classList.add('text-danger');
+        }
+    }
+
     function logout() {
       const user = JSON.parse(localStorage.getItem('bhyt_user') || '{}');
       if (user.sessionId) {
@@ -469,6 +708,60 @@
       }
       localStorage.removeItem('bhyt_user');
       window.location.reload();
+    }
+
+    function exportToExcel() {
+      if (typeof XLSX === 'undefined') {
+        alert('Lỗi: Thư viện xuất Excel (SheetJS) chưa được tải. Vui lòng kiểm tra kết nối mạng và thử lại.');
+        return;
+      }
+
+      const tableBody = document.getElementById('dataBody');
+      const visibleRows = Array.from(tableBody.rows).filter(row => row.style.display !== 'none');
+
+      if (visibleRows.length === 0) {
+        alert('Không có dữ liệu để xuất. Vui lòng tải và lọc dữ liệu trước.');
+        return;
+      }
+
+      const headerRow = document.querySelector('#bhyt-tab-pane thead tr:first-child');
+      const headers = Array.from(headerRow.cells).map(th => th.textContent.trim());
+
+      const data = visibleRows.map(row => 
+        Array.from(row.cells).map(td => {
+            const text = td.textContent.trim();
+            // Cố gắng chuyển đổi các chuỗi số thành kiểu số để Excel định dạng tốt hơn
+            if (/^-?\d+(\.\d+)?$/.test(text) && !text.includes('/')) {
+                return Number(text);
+            }
+            return text;
+        })
+      );
+
+      const worksheet = XLSX.utils.aoa_to_sheet([headers, ...data]);
+      
+      // Tự động điều chỉnh độ rộng cột
+      const cols = headers.map((header, index) => {
+        let maxLength = header.length;
+        data.forEach(row => {
+          const cellContent = row[index];
+          if (cellContent != null) {
+            const len = cellContent.toString().length;
+            if (len > maxLength) {
+              maxLength = len;
+            }
+          }
+        });
+        return { wch: maxLength + 2 }; // Thêm một chút khoảng đệm
+      });
+      worksheet['!cols'] = cols;
+
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Danh sách BHYT');
+
+      const today = new Date();
+      const dateString = `${today.getDate().toString().padStart(2, '0')}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getFullYear()}`;
+      XLSX.writeFile(workbook, `BHYT_den_han_${dateString}.xlsx`);
     }
 
     // --- Main page logic ---
@@ -504,6 +797,126 @@
         notificationLoadingElement.innerHTML = `<p class="text-danger">Lỗi hệ thống khi tải thông báo.</p>`;
       }
     }
+    
+    // --- BHYT Filtering Logic ---
+    function parseDateDDMMYYYY(dateString) {
+      if (!dateString || typeof dateString !== 'string') return null;
+      const parts = dateString.trim().split('/');
+      if (parts.length === 3) {
+          const day = parseInt(parts[0], 10);
+          const month = parseInt(parts[1], 10) - 1; // JS months are 0-indexed
+          const year = parseInt(parts[2], 10);
+          if (!isNaN(day) && !isNaN(month) && !isNaN(year) && year > 1000) {
+              const date = new Date(year, month, day);
+              // Check if it's a valid date (e.g., handles 31/02/2023)
+              if (date.getFullYear() === year && date.getMonth() === month && date.getDate() === day) {
+                  return date;
+              }
+          }
+      }
+      return null;
+    }
+
+    function applyFilters() {
+      const filters = {
+          hanThe: document.getElementById('filterHanThe').value.trim(),
+          hoTen: document.getElementById('filterHoTen').value.trim().toLowerCase(),
+          gioiTinh: document.getElementById('filterGioiTinh').value,
+          ngaySinh: document.getElementById('filterNgaySinh').value.trim(),
+          soDienThoai: document.getElementById('filterSoDienThoai').value.trim(),
+          diaChi: document.getElementById('filterDiaChi').value.trim().toLowerCase(),
+          maPb: document.getElementById('filterMaPb').value.trim().toLowerCase(),
+          cmnd: document.getElementById('filterCmnd').value.trim(),
+          maBv: document.getElementById('filterMaBv').value.trim().toLowerCase(),
+          soKcb: document.getElementById('filterSoKcb').value.trim(),
+          maDvi: document.getElementById('filterMaDvi').value.trim().toLowerCase()
+      };
+
+      const tableBody = document.getElementById('dataBody');
+      if (!tableBody) return;
+
+      for (const row of tableBody.rows) {
+          const cells = row.cells;
+          let visible = true;
+
+          // Text filters
+          if (filters.hoTen && !cells[1].textContent.toLowerCase().includes(filters.hoTen)) visible = false;
+          if (filters.soDienThoai && !cells[4].textContent.includes(filters.soDienThoai)) visible = false;
+          if (filters.diaChi && !cells[5].textContent.toLowerCase().includes(filters.diaChi)) visible = false;
+          if (filters.maPb && !cells[6].textContent.toLowerCase().includes(filters.maPb)) visible = false;
+          if (filters.cmnd && !cells[7].textContent.includes(filters.cmnd)) visible = false;
+          if (filters.maBv && !cells[8].textContent.toLowerCase().includes(filters.maBv)) visible = false;
+          if (filters.soKcb && !cells[9].textContent.includes(filters.soKcb)) visible = false;
+          if (filters.maDvi && !cells[10].textContent.toLowerCase().includes(filters.maDvi)) visible = false;
+
+          // Select filter
+          if (filters.gioiTinh && cells[2].textContent !== filters.gioiTinh) visible = false;
+
+          // Date filters (Hạn thẻ đến - col 0 & Ngày sinh - col 3)
+          [
+              { filter: filters.hanThe, cell: cells[0] },
+              { filter: filters.ngaySinh, cell: cells[3] }
+          ].forEach(dateFilter => {
+              if (dateFilter.filter && visible) { // only process if still visible
+                  const cellDateText = dateFilter.cell.textContent;
+                  const cellDate = parseDateDDMMYYYY(cellDateText);
+                  let operator = '';
+                  let filterDateText = dateFilter.filter;
+
+                  if (filterDateText.startsWith('>=')) {
+                      operator = '>=';
+                      filterDateText = filterDateText.substring(2).trim();
+                  } else if (filterDateText.startsWith('<=')) {
+                      operator = '<=';
+                      filterDateText = filterDateText.substring(2).trim();
+                  } else if (filterDateText.startsWith('>')) {
+                      operator = '>';
+                      filterDateText = filterDateText.substring(1).trim();
+                  } else if (filterDateText.startsWith('<')) {
+                      operator = '<';
+                      filterDateText = filterDateText.substring(1).trim();
+                  } else if (filterDateText.startsWith('=')) {
+                      operator = '=';
+                      filterDateText = filterDateText.substring(1).trim();
+                  }
+
+                  const filterDate = parseDateDDMMYYYY(filterDateText);
+
+                  if (filterDate && cellDate) {
+                      const cellTime = new Date(cellDate.getFullYear(), cellDate.getMonth(), cellDate.getDate()).getTime();
+                      const filterTime = new Date(filterDate.getFullYear(), filterDate.getMonth(), filterDate.getDate()).getTime();
+                      switch (operator) {
+                          case '>=': if (!(cellTime >= filterTime)) visible = false; break;
+                          case '<=': if (!(cellTime <= filterTime)) visible = false; break;
+                          case '>':  if (!(cellTime > filterTime)) visible = false; break;
+                          case '<': if (!(cellTime < filterTime)) visible = false; break;
+                          case '=': if (cellTime !== filterTime) visible = false; break;
+                          default: // if no operator, check if it contains
+                             if (!cellDateText.includes(dateFilter.filter)) visible = false;
+                      }
+                  } else { // If parsing fails, do a "contains" search
+                      if (!cellDateText.includes(dateFilter.filter)) visible = false;
+                  }
+              }
+          });
+          row.style.display = visible ? '' : 'none';
+      }
+    }
+
+    function clearAllFilters() {
+      const filterRow = document.querySelector('.filter-row');
+      if (filterRow) {
+          filterRow.querySelectorAll('input, select').forEach(input => {
+              if(input.tagName === 'SELECT') {
+                  input.selectedIndex = 0;
+              } else {
+                  input.value = "";
+              }
+          });
+      }
+      applyFilters();
+    }
+    // --- End of Filtering Logic ---
 
     async function loadData(type) {
       document.getElementById('loading').innerText = 'Đang tải dữ liệu...';
@@ -534,6 +947,8 @@
               <td>${row.hanTheDen||''}</td><td>${row.hoTen||''}</td><td>${row.gioiTinh||''}</td><td>${row.ngaySinh||''}</td><td>${row.soDienThoai||''}</td><td>${row.diaChiLh||''}</td><td>${row.maPb||''}</td><td>${row.soCmnd||''}</td><td>${row.maBv||''}</td><td>${row.soKcb||''}</td><td>${row.maDvi||''}</td>
             </tr>`).join('');
           document.getElementById('dataBody').innerHTML = rows || '<tr><td colspan="11">Không có dữ liệu</td></tr>';
+          // Apply filters to the newly loaded data
+          applyFilters(); 
         } else {
            if (data.error && (data.error.includes('hết hạn') || data.error.includes('không hợp lệ'))) {
               alert(data.error + " Vui lòng đăng nhập lại."); logout();
@@ -554,8 +969,16 @@
 
         if (user && user.sessionId) {
             // Logged In State
-            userActions.innerHTML = `<span class="navbar-text me-3">Xin chào, ${user.fullName}</span>
-                                     <button class="btn btn-outline-secondary btn-sm" onclick="logout()">Đăng xuất</button>`;
+            userActions.innerHTML = `<div class="dropdown">
+                                      <button class="btn btn-outline-secondary dropdown-toggle btn-sm" type="button" id="userMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                                        Xin chào, ${user.fullName}
+                                      </button>
+                                      <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenuButton">
+                                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#changePasswordModal">Đổi mật khẩu</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" href="#" onclick="logout()">Đăng xuất</a></li>
+                                      </ul>
+                                    </div>`;
             
             document.getElementById('home-tab-li').style.display = 'block';
             document.getElementById('bhyt-tab-li').style.display = 'block';
@@ -599,13 +1022,178 @@
             new bootstrap.Tab(qrcodeTabEl).show();
         }
     }
+    
+    function initQRCodeTool() {
+        const generateBtn = document.getElementById('generate-btn');
+        const qrCodeContainer = document.getElementById('qrcode-container');
+        const statusMessage = document.getElementById('status-message');
+        const qrPills = document.querySelectorAll('#qr-type-pills .nav-link');
+
+        // QR Generator elements
+        const textInput = document.getElementById('qr-text-input');
+        const urlInput = document.getElementById('qr-url-input');
+        const wifiSsidInput = document.getElementById('qr-wifi-ssid');
+        const wifiPasswordInput = document.getElementById('qr-wifi-password');
+        const wifiEncryptionSelect = document.getElementById('qr-wifi-encryption');
+        const vcardNameInput = document.getElementById('qr-vcard-name');
+        const vcardPhoneInput = document.getElementById('qr-vcard-phone');
+        const vcardEmailInput = document.getElementById('qr-vcard-email');
+        const vcardOrgInput = document.getElementById('qr-vcard-org');
+
+        // QR Reader elements
+        const uploader = document.getElementById('qr-reader-uploader');
+        const uploadInput = document.getElementById('qr-upload-input');
+        const resultContainer = document.getElementById('qr-reader-result-container');
+        const resultText = document.getElementById('qr-reader-result-text');
+
+        // --- QR Code Generation ---
+        function generateQrCode() {
+            let data = '';
+            statusMessage.textContent = '';
+            qrCodeContainer.innerHTML = '';
+
+            const activePill = document.querySelector('#qr-type-pills .nav-link.active');
+            if (!activePill) return;
+            const activeQrTab = activePill.getAttribute('aria-controls');
+
+            switch (activeQrTab) {
+                case 'qr-text-pane':
+                    data = textInput.value;
+                    break;
+                case 'qr-url-pane':
+                    data = urlInput.value;
+                    if (data && !data.startsWith('http://') && !data.startsWith('https://')) {
+                        data = 'https://' + data;
+                    }
+                    break;
+                case 'qr-wifi-pane':
+                    const ssid = wifiSsidInput.value;
+                    const password = wifiPasswordInput.value;
+                    const encryption = wifiEncryptionSelect.value;
+                    if (ssid) {
+                        data = `WIFI:T:${encryption};S:${ssid};P:${password};;`;
+                    }
+                    break;
+                case 'qr-vcard-pane':
+                    const name = vcardNameInput.value;
+                    const phone = vcardPhoneInput.value;
+                    const email = vcardEmailInput.value;
+                    const org = vcardOrgInput.value;
+                    if (name || phone || email || org) {
+                        data = `BEGIN:VCARD\nVERSION:3.0\nN:${name || ''}\n`;
+                        if (org) data += `ORG:${org}\n`;
+                        if (phone) data += `TEL:${phone}\n`;
+                        if (email) data += `EMAIL:${email}\n`;
+                        data += `END:VCARD`;
+                    }
+                    break;
+            }
+
+            if (data) {
+                try {
+                     new QRCode(qrCodeContainer, {
+                        text: data,
+                        width: 256,
+                        height: 256,
+                        colorDark: "#000000",
+                        colorLight: "#ffffff",
+                        correctLevel: QRCode.CorrectLevel.H
+                    });
+                } catch (error) {
+                    console.error("QR Code generation error:", error);
+                    statusMessage.textContent = 'Không thể tạo mã QR. Dữ liệu có thể quá dài.';
+                }
+            } else {
+                 if (activeQrTab !== 'qr-read-pane') {
+                    statusMessage.textContent = 'Vui lòng nhập dữ liệu để tạo mã QR.';
+                }
+            }
+        }
+        
+        if(generateBtn) {
+            generateBtn.addEventListener('click', generateQrCode);
+        }
+
+        // --- QR Code Reading ---
+        function handleQrFile(file) {
+            if (!file || !file.type.startsWith('image/')) {
+                alert('Vui lòng chọn một tệp ảnh.');
+                return;
+            }
+            
+            resultContainer.style.display = 'none';
+            resultText.textContent = '';
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.drawImage(img, 0, 0, img.width, img.height);
+                    const imageData = ctx.getImageData(0, 0, img.width, img.height);
+                    
+                    const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+                    if (code) {
+                        resultText.textContent = code.data;
+                        resultContainer.style.display = 'block';
+                    } else {
+                        alert('Không tìm thấy mã QR trong ảnh.');
+                    }
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        if(uploadInput) {
+            uploadInput.addEventListener('change', (e) => handleQrFile(e.target.files[0]));
+        }
+        
+        if(uploader) {
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                uploader.addEventListener(eventName, (e) => { e.preventDefault(); e.stopPropagation(); }, false);
+            });
+            uploader.addEventListener('drop', (e) => {
+                 handleQrFile(e.dataTransfer.files[0]);
+            }, false);
+        }
+        
+        // --- Tab Management ---
+        qrPills.forEach(pill => {
+            pill.addEventListener('shown.bs.tab', (event) => {
+                const newActiveTabId = event.target.getAttribute('aria-controls');
+                generateBtn.style.display = (newActiveTabId === 'qr-read-pane') ? 'none' : 'block';
+                qrCodeContainer.innerHTML = '';
+                statusMessage.textContent = '';
+                resultContainer.style.display = 'none';
+                resultText.textContent = '';
+                uploadInput.value = '';
+            });
+        });
+    }
 
 
     document.addEventListener('DOMContentLoaded', () => {
       authModalInstance = new bootstrap.Modal(document.getElementById('authModal'));
+      changePasswordModalInstance = new bootstrap.Modal(document.getElementById('changePasswordModal'));
+
+      // Login on Enter key press in the password field
+      document.getElementById('loginPassword').addEventListener('keyup', function(event) {
+          if (event.key === 'Enter') {
+              event.preventDefault(); // Prevent any default action
+              handleLogin();
+          }
+      });
+
       initApp();
+      initQRCodeTool();
     });
 
   </script>
+<script type="module" src="/index.tsx"></script>
 </body>
 </html>
