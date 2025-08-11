@@ -362,7 +362,6 @@ function exportToExcel() {
 // --- Main page logic ---
 const notificationLoadingElement = document.getElementById('notificationLoading');
 const notificationContentElement = document.getElementById('notificationContent');
-const monthSelectElement = document.getElementById('monthSelect');
 let bhytDataLoaded = false;
 
 async function loadNotification() {
@@ -497,20 +496,6 @@ function applyFilters() {
       row.style.display = visible ? '' : 'none';
   }
 }
-
-function clearAllFilters() {
-  const filterRow = document.querySelector('.filter-row');
-  if (filterRow) {
-      filterRow.querySelectorAll('input, select').forEach(input => {
-          if(input.tagName === 'SELECT') {
-              input.selectedIndex = 0;
-          } else {
-              input.value = "";
-          }
-      });
-  }
-  applyFilters();
-}
 // --- End of Filtering Logic ---
 
 async function loadData(type) {
@@ -520,24 +505,25 @@ async function loadData(type) {
   if (!user.sessionId) { logout(); return; }
 
   const payload = { action: 'fetchBHYTData', filterType: type, sessionId: user.sessionId };
-  if (type === 'byMonth') {
-    const selectedValue = monthSelectElement.value;
-    if (!selectedValue) {
-        document.getElementById('loading').innerText = '';
-        document.getElementById('dataBody').innerHTML = '<tr><td colspan="11">Vui lòng chọn một tháng.</td></tr>';
-        return;
-    }
-    const [month, year] = selectedValue.split('/');
-    payload.month = month;
-    payload.year = year;
-  }
+
   const formBody = Object.entries(payload).map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('&');
   try {
     const res = await fetch(CONFIG.API_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: formBody });
     const data = await res.json();
     if (data.success) {
       bhytDataLoaded = true;
-      const rows = data.data.map(row => `
+      
+      // Sắp xếp dữ liệu theo ngày đến hạn tăng dần
+      const sortedData = data.data.sort((a, b) => {
+          const dateA = parseDateDDMMYYYY(a.hanTheDen);
+          const dateB = parseDateDDMMYYYY(b.hanTheDen);
+          if (!dateA && !dateB) return 0;
+          if (!dateA) return 1; // Đẩy các hàng không có ngày xuống cuối
+          if (!dateB) return -1;
+          return dateA - dateB; // Sắp xếp tăng dần
+      });
+
+      const rows = sortedData.map(row => `
         <tr>
           <td>${row.hanTheDen||''}</td><td>${row.hoTen||''}</td><td>${row.gioiTinh||''}</td><td>${row.ngaySinh||''}</td><td>${row.soDienThoai||''}</td><td>${row.diaChiLh||''}</td><td>${row.maPb||''}</td><td>${row.soCmnd||''}</td><td>${row.maBv||''}</td><td>${row.soKcb||''}</td><td>${row.maDvi||''}</td>
         </tr>`).join('');
@@ -582,20 +568,7 @@ function initApp() {
         const homeTabEl = document.getElementById('home-tab');
         const qrcodeTabEl = document.getElementById('qrcode-tab');
         new bootstrap.Tab(homeTabEl).show();
-
-        // Populate month/year dropdown
-        const today = new Date();
-        const currentYear = today.getFullYear();
-        for (let yOffset = 0; yOffset <= 1; yOffset++) {
-            const yearToDisplay = currentYear + yOffset;
-            for (let m = 1; m <= 12; m++) {
-                const option = document.createElement('option');
-                option.value = `${m}/${yearToDisplay}`;
-                option.textContent = `Tháng ${m}/${yearToDisplay}`;
-                monthSelectElement.appendChild(option);
-            }
-        }
-
+        
         // Add tab listeners for logged-in features
         const bhytTab = document.querySelector('#bhyt-tab');
         bhytTab.addEventListener('show.bs.tab', () => { if (!bhytDataLoaded) loadData('dueSoon'); });
