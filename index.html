@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Công cụ trực tuyến</title>
+  <title data-i18n="pageTitle">Công cụ trực tuyến</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="styles.css">
@@ -16,96 +16,96 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="authModalLabel">Đăng nhập</h5>
+          <h5 class="modal-title" id="authModalLabel" data-i18n="auth.loginTitle">Đăng nhập</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <!-- Login Form -->
           <div id="loginForm">
             <div class="mb-3">
-              <label for="loginEmail" class="form-label">Email</label>
+              <label for="loginEmail" class="form-label" data-i18n="auth.email">Email</label>
               <input type="email" class="form-control" id="loginEmail" autocomplete="email">
             </div>
             <div class="mb-3">
-              <label for="loginPassword" class="form-label">Mật khẩu</label>
+              <label for="loginPassword" class="form-label" data-i18n="auth.password">Mật khẩu</label>
               <input type="password" class="form-control" id="loginPassword" autocomplete="current-password">
             </div>
-            <button class="btn btn-primary w-100" onclick="handleLogin()">Đăng nhập</button>
+            <button class="btn btn-primary w-100" onclick="handleLogin()" data-i18n="auth.loginButton">Đăng nhập</button>
             <div class="d-flex justify-content-between mt-2">
-              <a href="#" class="btn btn-link" onclick="showAuthForm('forgotForm')">Quên mật khẩu?</a>
-              <a href="#" class="btn btn-link" onclick="showAuthForm('registerForm')">Đăng ký</a>
+              <a href="#" class="btn btn-link" onclick="showAuthForm('forgotForm')" data-i18n="auth.forgotPasswordLink">Quên mật khẩu?</a>
+              <a href="#" class="btn btn-link" onclick="showAuthForm('registerForm')" data-i18n="auth.registerLink">Đăng ký</a>
             </div>
             <div id="loginMessage" class="mt-3 text-danger"></div>
           </div>
 
           <!-- Register Form -->
           <div id="registerForm" class="hidden">
-            <h5 class="mb-3">Đăng ký</h5>
+            <h5 class="mb-3" data-i18n="auth.registerTitle">Đăng ký</h5>
             <div class="mb-3">
-              <label for="regEmail" class="form-label">Email</label>
+              <label for="regEmail" class="form-label" data-i18n="auth.email">Email</label>
               <input type="email" class="form-control" id="regEmail" autocomplete="email">
             </div>
             <div class="mb-3">
-              <label for="regName" class="form-label">Họ và tên</label>
+              <label for="regName" class="form-label" data-i18n="auth.fullName">Họ và tên</label>
               <input type="text" class="form-control" id="regName" autocomplete="name">
             </div>
             <div class="mb-3">
-              <label for="regCCCD" class="form-label">Số CCCD</label>
+              <label for="regCCCD" class="form-label" data-i18n="auth.cccd">Số CCCD</label>
               <input type="text" class="form-control" id="regCCCD">
             </div>
             <div class="mb-3">
-              <label for="regPassword" class="form-label">Mật khẩu</label>
+              <label for="regPassword" class="form-label" data-i18n="auth.password">Mật khẩu</label>
               <input type="password" class="form-control" id="regPassword" autocomplete="new-password">
             </div>
-            <button class="btn btn-success w-100" onclick="handleRegister()">Đăng ký</button>
-            <a href="#" class="btn btn-link d-block mt-2" onclick="showAuthForm('loginForm')">Quay lại đăng nhập</a>
+            <button class="btn btn-success w-100" onclick="handleRegister()" data-i18n="auth.registerButton">Đăng ký</button>
+            <a href="#" class="btn btn-link d-block mt-2" onclick="showAuthForm('loginForm')" data-i18n="auth.backToLogin">Quay lại đăng nhập</a>
             <div id="registerMessage" class="mt-3 text-danger"></div>
           </div>
           
           <!-- Forgot Password Form -->
           <div id="forgotForm" class="hidden">
-              <h5 class="mb-3">Quên mật khẩu</h5>
+              <h5 class="mb-3" data-i18n="auth.forgotPasswordTitle">Quên mật khẩu</h5>
               <div class="mb-3">
-                  <label for="forgotEmail" class="form-label">Nhập email của bạn</label>
+                  <label for="forgotEmail" class="form-label" data-i18n="auth.forgotPasswordPrompt">Nhập email của bạn</label>
                   <input type="email" class="form-control" id="forgotEmail" autocomplete="email">
               </div>
-              <button class="btn btn-warning w-100" onclick="handleForgot()">Gửi OTP</button>
-              <a href="#" class="btn btn-link d-block mt-2" onclick="showAuthForm('loginForm')">Quay lại đăng nhập</a>
+              <button class="btn btn-warning w-100" onclick="handleForgot()" data-i18n="auth.sendOtpButton">Gửi OTP</button>
+              <a href="#" class="btn btn-link d-block mt-2" onclick="showAuthForm('loginForm')" data-i18n="auth.backToLogin">Quay lại đăng nhập</a>
               <div id="forgotMessage" class="mt-3"></div>
           </div>
 
           <!-- Reset Password Form -->
           <div id="resetForm" class="hidden">
-              <h5 class="mb-3">Đặt lại mật khẩu</h5>
-              <p class="text-muted small">Một mã OTP đã được gửi đến email <strong id="resetEmailDisplay"></strong>. Vui lòng nhập mã đó bên dưới.</p>
+              <h5 class="mb-3" data-i18n="auth.resetPasswordTitle">Đặt lại mật khẩu</h5>
+              <p class="text-muted small"><span data-i18n="auth.resetPasswordPrompt">Một mã OTP đã được gửi đến email</span> <strong id="resetEmailDisplay"></strong>. <span data-i18n="auth.resetPasswordPrompt2">Vui lòng nhập mã đó bên dưới.</span></p>
               <div class="mb-3">
-                  <label for="otpCode" class="form-label">Mã OTP</label>
+                  <label for="otpCode" class="form-label" data-i18n="auth.otpCode">Mã OTP</label>
                   <input type="text" class="form-control" id="otpCode" inputmode="numeric" autocomplete="one-time-code">
               </div>
               <div class="mb-3">
-                  <label for="newPassword" class="form-label">Mật khẩu mới</label>
+                  <label for="newPassword" class="form-label" data-i18n="auth.newPassword">Mật khẩu mới</label>
                   <input type="password" class="form-control" id="newPassword" autocomplete="new-password">
               </div>
-              <button class="btn btn-info w-100" onclick="handleResetPassword()">Đặt lại mật khẩu</button>
+              <button class="btn btn-info w-100" onclick="handleResetPassword()" data-i18n="auth.resetPasswordButton">Đặt lại mật khẩu</button>
               <div id="resetMessage" class="mt-3"></div>
                <div class="d-flex justify-content-between align-items-center mt-3">
                   <div id="resendOtpContainer" class="text-muted small">
                       <!-- JS will populate this -->
                   </div>
-                  <a href="#" class="btn btn-link btn-sm" onclick="showAuthForm('loginForm')">Quay lại đăng nhập</a>
+                  <a href="#" class="btn btn-link btn-sm" onclick="showAuthForm('loginForm')" data-i18n="auth.backToLogin">Quay lại đăng nhập</a>
               </div>
           </div>
           
           <!-- Device Verification Form -->
           <div id="deviceOtpForm" class="hidden">
-              <h5 class="mb-3">Xác thực thiết bị</h5>
-              <p class="text-muted small">Đây là lần đầu bạn đăng nhập từ thiết bị này. Để bảo mật, chúng tôi đã gửi mã OTP tới email của bạn.</p>
+              <h5 class="mb-3" data-i18n="auth.deviceVerificationTitle">Xác thực thiết bị</h5>
+              <p class="text-muted small" data-i18n="auth.deviceVerificationPrompt">Đây là lần đầu bạn đăng nhập từ thiết bị này. Để bảo mật, chúng tôi đã gửi mã OTP tới email của bạn.</p>
               <div class="mb-3">
-                  <label for="deviceOtpCode" class="form-label">Mã OTP</label>
+                  <label for="deviceOtpCode" class="form-label" data-i18n="auth.otpCode">Mã OTP</label>
                   <input type="text" class="form-control" id="deviceOtpCode" inputmode="numeric" autocomplete="one-time-code">
               </div>
-              <button class="btn btn-primary w-100" onclick="handleDeviceVerification()">Xác thực và Đăng nhập</button>
-              <a href="#" class="btn btn-link d-block mt-2" onclick="showAuthForm('loginForm')">Quay lại</a>
+              <button class="btn btn-primary w-100" onclick="handleDeviceVerification()" data-i18n="auth.verifyAndLoginButton">Xác thực và Đăng nhập</button>
+              <a href="#" class="btn btn-link d-block mt-2" onclick="showAuthForm('loginForm')" data-i18n="auth.backButton">Quay lại</a>
               <div id="deviceOtpMessage" class="mt-3"></div>
           </div>
 
@@ -119,27 +119,27 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="changePasswordModalLabel">Đổi mật khẩu</h5>
+          <h5 class="modal-title" id="changePasswordModalLabel" data-i18n="user.changePasswordTitle">Đổi mật khẩu</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <div class="mb-3">
-            <label for="currentPassword" class="form-label">Mật khẩu hiện tại</label>
+            <label for="currentPassword" class="form-label" data-i18n="user.currentPassword">Mật khẩu hiện tại</label>
             <input type="password" class="form-control" id="currentPassword" autocomplete="current-password">
           </div>
           <div class="mb-3">
-            <label for="changeNewPassword" class="form-label">Mật khẩu mới</label>
+            <label for="changeNewPassword" class="form-label" data-i18n="auth.newPassword">Mật khẩu mới</label>
             <input type="password" class="form-control" id="changeNewPassword" autocomplete="new-password">
           </div>
           <div class="mb-3">
-            <label for="confirmNewPassword" class="form-label">Xác nhận mật khẩu mới</label>
+            <label for="confirmNewPassword" class="form-label" data-i18n="user.confirmNewPassword">Xác nhận mật khẩu mới</label>
             <input type="password" class="form-control" id="confirmNewPassword" autocomplete="new-password">
           </div>
           <div id="changePasswordMessage" class="mt-3"></div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-          <button type="button" class="btn btn-primary" onclick="handleChangePassword()">Lưu thay đổi</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="common.close">Đóng</button>
+          <button type="button" class="btn btn-primary" onclick="handleChangePassword()" data-i18n="common.saveChanges">Lưu thay đổi</button>
         </div>
       </div>
     </div>
@@ -147,27 +147,38 @@
 
   <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
     <div class="container-fluid">
-      <a class="navbar-brand fw-bold d-none d-lg-block" href="#">Công cụ trực tuyến</a>
+      <a class="navbar-brand fw-bold d-none d-lg-block" href="#" data-i18n="nav.brand">Công cụ trực tuyến</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarContent">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0" id="mainNavItems" role="tablist">
           <li class="nav-item" role="presentation" id="home-tab-li" style="display: none;">
-            <a class="nav-link" id="home-tab" data-bs-toggle="tab" data-bs-target="#home-tab-pane" href="#" role="tab" aria-controls="home-tab-pane">Thông báo</a>
+            <a class="nav-link" id="home-tab" data-bs-toggle="tab" data-bs-target="#home-tab-pane" href="#" role="tab" aria-controls="home-tab-pane" data-i18n="nav.notifications">Thông báo</a>
           </li>
           <li class="nav-item" role="presentation" id="bhyt-tab-li" style="display: none;">
-            <a class="nav-link" id="bhyt-tab" data-bs-toggle="tab" data-bs-target="#bhyt-tab-pane" href="#" role="tab" aria-controls="bhyt-tab-pane">Dữ liệu đáo hạn BHYT</a>
+            <a class="nav-link" id="bhyt-tab" data-bs-toggle="tab" data-bs-target="#bhyt-tab-pane" href="#" role="tab" aria-controls="bhyt-tab-pane" data-i18n="nav.bhyt">Dữ liệu đáo hạn BHYT</a>
           </li>
           <li class="nav-item" role="presentation">
-            <a class="nav-link active" id="qrcode-tab" data-bs-toggle="tab" data-bs-target="#qrcode-tab-pane" href="#" role="tab" aria-controls="qrcode-tab-pane" aria-selected="true">Công cụ QR Code</a>
+            <a class="nav-link active" id="qrcode-tab" data-bs-toggle="tab" data-bs-target="#qrcode-tab-pane" href="#" role="tab" aria-controls="qrcode-tab-pane" aria-selected="true" data-i18n="nav.qrcode">Công cụ QR Code</a>
           </li>
           <li class="nav-item" role="presentation">
-            <a class="nav-link" id="hinhanh-tab" data-bs-toggle="tab" data-bs-target="#hinhanh-tab-pane" href="#" role="tab" aria-controls="hinhanh-tab-pane">Chỉnh sửa ảnh</a>
+            <a class="nav-link" id="hinhanh-tab" data-bs-toggle="tab" data-bs-target="#hinhanh-tab-pane" href="#" role="tab" aria-controls="hinhanh-tab-pane" data-i18n="nav.imageEditor">Chỉnh sửa ảnh</a>
           </li>
         </ul>
-        <div id="userActions" class="ms-auto">
-          <!-- Populated by JS -->
+        <div class="d-flex align-items-center ms-auto">
+          <div class="dropdown me-2">
+            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" id="languageSwitcher" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Language switcher">
+              <i class="bi bi-globe"></i> <span id="current-lang-display">VI</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageSwitcher">
+              <li><a class="dropdown-item" href="#" id="lang-vi">Tiếng Việt (VI)</a></li>
+              <li><a class="dropdown-item" href="#" id="lang-en">English (EN)</a></li>
+            </ul>
+          </div>
+          <div id="userActions">
+            <!-- Populated by JS -->
+          </div>
         </div>
       </div>
     </div>
@@ -179,9 +190,9 @@
       <!-- Home/Notification Tab -->
       <div class="tab-pane fade" id="home-tab-pane" role="tabpanel" aria-labelledby="home-tab" tabindex="0">
           <div class="p-3">
-            <h4>Thông báo</h4>
+            <h4 data-i18n="notifications.title">Thông báo</h4>
             <div id="notificationDisplayArea" class="mt-3">
-                <div id="notificationLoading" class="text-muted">Đang tải thông báo...</div>
+                <div id="notificationLoading" class="text-muted" data-i18n="notifications.loading">Đang tải thông báo...</div>
                 <div id="notificationContent"></div>
             </div>
           </div>
@@ -190,48 +201,48 @@
       <!-- BHYT Tab -->
       <div class="tab-pane fade" id="bhyt-tab-pane" role="tabpanel" aria-labelledby="bhyt-tab" tabindex="0">
         <div class="p-3">
-            <h4>Danh sách BHYT đến hạn theo từng nhân viên thu</h4>
+            <h4 data-i18n="bhyt.title">Danh sách BHYT đến hạn theo từng nhân viên thu</h4>
             <div id="bhytDataArea">
               <div class="mb-3 mt-3 d-flex flex-wrap align-items-center">
-                  <button class="btn btn-primary me-2 mb-2" onclick="loadData('dueSoon')">Hạn ±30 ngày</button>
-                  <button class="btn btn-warning me-2 mb-2" onclick="loadData('expiredRecently')">Hết 30–90 ngày</button>
-                  <button class="btn btn-success me-2 mb-2" onclick="exportToExcel()"><i class="bi bi-file-earmark-excel"></i> Xuất Excel</button>
+                  <button class="btn btn-primary me-2 mb-2" onclick="loadData('dueSoon')" data-i18n="bhyt.dueSoonButton">Hạn ±30 ngày</button>
+                  <button class="btn btn-warning me-2 mb-2" onclick="loadData('expiredRecently')" data-i18n="bhyt.expiredRecentlyButton">Hết 30–90 ngày</button>
+                  <button class="btn btn-success me-2 mb-2" onclick="exportToExcel()"><i class="bi bi-file-earmark-excel"></i> <span data-i18n="bhyt.exportButton">Xuất Excel</span></button>
               </div>
-              <div id="loading" class="text-muted mb-2">Đang tải dữ liệu...</div>
+              <div id="loading" class="text-muted mb-2" data-i18n="bhyt.loading">Đang tải dữ liệu...</div>
               <div class="table-responsive">
                   <table class="table table-bordered table-striped">
                       <thead>
                           <tr>
-                              <th>Hạn thẻ đến</th>
-                              <th>Họ tên</th>
-                              <th>Giới tính</th>
-                              <th>Ngày sinh</th>
-                              <th>Số điện thoại</th>
-                              <th>Địa chỉ LH</th>
-                              <th>Mã PB</th>
-                              <th>Số CMND/CCCD</th>
-                              <th>Mã BV</th>
-                              <th>Số KCB</th>
-                              <th>Mã ĐV</th>
+                              <th data-i18n="bhyt.headers.hanTheDen">Hạn thẻ đến</th>
+                              <th data-i18n="bhyt.headers.hoTen">Họ tên</th>
+                              <th data-i18n="bhyt.headers.gioiTinh">Giới tính</th>
+                              <th data-i18n="bhyt.headers.ngaySinh">Ngày sinh</th>
+                              <th data-i18n="bhyt.headers.soDienThoai">Số điện thoại</th>
+                              <th data-i18n="bhyt.headers.diaChiLh">Địa chỉ LH</th>
+                              <th data-i18n="bhyt.headers.maPb">Mã PB</th>
+                              <th data-i18n="bhyt.headers.soCmnd">Số CMND/CCCD</th>
+                              <th data-i18n="bhyt.headers.maBv">Mã BV</th>
+                              <th data-i18n="bhyt.headers.soKcb">Số KCB</th>
+                              <th data-i18n="bhyt.headers.maDvi">Mã ĐV</th>
                           </tr>
                           <tr class="filter-row">
-                              <th><input type="text" class="form-control form-control-sm" id="filterHanThe" placeholder=">, <, =dd/mm/yyyy" onkeyup="applyFilters()"></th>
-                              <th><input type="text" class="form-control form-control-sm" id="filterHoTen" placeholder="Lọc tên..." onkeyup="applyFilters()"></th>
+                              <th><input type="text" class="form-control form-control-sm" id="filterHanThe" onkeyup="applyFilters()" data-i18n-placeholder="bhyt.filters.datePlaceholder"></th>
+                              <th><input type="text" class="form-control form-control-sm" id="filterHoTen" onkeyup="applyFilters()" data-i18n-placeholder="bhyt.filters.namePlaceholder"></th>
                               <th>
                                   <select id="filterGioiTinh" class="form-select form-select-sm" onchange="applyFilters()">
-                                      <option value="">Tất cả</option>
-                                      <option value="Nam">Nam</option>
-                                      <option value="Nữ">Nữ</option>
+                                      <option value="" data-i18n="bhyt.filters.genderAll">Tất cả</option>
+                                      <option value="Nam" data-i18n="bhyt.filters.genderMale">Nam</option>
+                                      <option value="Nữ" data-i18n="bhyt.filters.genderFemale">Nữ</option>
                                   </select>
                               </th>
-                              <th><input type="text" class="form-control form-control-sm" id="filterNgaySinh" placeholder=">, <, =dd/mm/yyyy" onkeyup="applyFilters()"></th>
-                              <th><input type="text" class="form-control form-control-sm" id="filterSoDienThoai" placeholder="Lọc SĐT..." onkeyup="applyFilters()"></th>
-                              <th><input type="text" class="form-control form-control-sm" id="filterDiaChi" placeholder="Lọc địa chỉ..." onkeyup="applyFilters()"></th>
-                              <th><input type="text" class="form-control form-control-sm" id="filterMaPb" placeholder="Lọc mã..." onkeyup="applyFilters()"></th>
-                              <th><input type="text" class="form-control form-control-sm" id="filterCmnd" placeholder="Lọc CCCD..." onkeyup="applyFilters()"></th>
-                              <th><input type="text" class="form-control form-control-sm" id="filterMaBv" placeholder="Lọc mã..." onkeyup="applyFilters()"></th>
-                              <th><input type="text" class="form-control form-control-sm" id="filterSoKcb" placeholder="Lọc số..." onkeyup="applyFilters()"></th>
-                              <th><input type="text" class="form-control form-control-sm" id="filterMaDvi" placeholder="Lọc mã..." onkeyup="applyFilters()"></th>
+                              <th><input type="text" class="form-control form-control-sm" id="filterNgaySinh" onkeyup="applyFilters()" data-i18n-placeholder="bhyt.filters.datePlaceholder"></th>
+                              <th><input type="text" class="form-control form-control-sm" id="filterSoDienThoai" onkeyup="applyFilters()" data-i18n-placeholder="bhyt.filters.phonePlaceholder"></th>
+                              <th><input type="text" class="form-control form-control-sm" id="filterDiaChi" onkeyup="applyFilters()" data-i18n-placeholder="bhyt.filters.addressPlaceholder"></th>
+                              <th><input type="text" class="form-control form-control-sm" id="filterMaPb" onkeyup="applyFilters()" data-i18n-placeholder="bhyt.filters.codePlaceholder"></th>
+                              <th><input type="text" class="form-control form-control-sm" id="filterCmnd" onkeyup="applyFilters()" data-i18n-placeholder="bhyt.filters.cccdPlaceholder"></th>
+                              <th><input type="text" class="form-control form-control-sm" id="filterMaBv" onkeyup="applyFilters()" data-i18n-placeholder="bhyt.filters.codePlaceholder"></th>
+                              <th><input type="text" class="form-control form-control-sm" id="filterSoKcb" onkeyup="applyFilters()" data-i18n-placeholder="bhyt.filters.numberPlaceholder"></th>
+                              <th><input type="text" class="form-control form-control-sm" id="filterMaDvi" onkeyup="applyFilters()" data-i18n-placeholder="bhyt.filters.codePlaceholder"></th>
                           </tr>
                       </thead>
                       <tbody id="dataBody"></tbody>
@@ -245,25 +256,25 @@
       <div class="tab-pane fade show active" id="qrcode-tab-pane" role="tabpanel" aria-labelledby="qrcode-tab" tabindex="0">
         <div class="qrcode-app-wrapper">
           <div class="container">
-              <h1>Công cụ mã QR Code</h1>
-              <p>Chọn chức năng bạn muốn sử dụng.</p>
+              <h1 data-i18n="qrcode.title">Công cụ mã QR Code</h1>
+              <p data-i18n="qrcode.subtitle">Chọn chức năng bạn muốn sử dụng.</p>
               
               <!-- QR Type Selection Tabs -->
               <ul class="nav nav-pills nav-fill mb-3" id="qr-type-pills" role="tablist">
                 <li class="nav-item" role="presentation">
-                  <button class="nav-link active" id="qr-text-tab" data-bs-toggle="pill" data-bs-target="#qr-text-pane" type="button" role="tab" aria-controls="qr-text-pane" aria-selected="true"><i class="bi bi-fonts me-2"></i>Tạo: Văn bản</button>
+                  <button class="nav-link active" id="qr-text-tab" data-bs-toggle="pill" data-bs-target="#qr-text-pane" type="button" role="tab" aria-controls="qr-text-pane" aria-selected="true"><i class="bi bi-fonts me-2"></i><span data-i18n="qrcode.tabs.createText">Tạo: Văn bản</span></button>
                 </li>
                 <li class="nav-item" role="presentation">
-                  <button class="nav-link" id="qr-url-tab" data-bs-toggle="pill" data-bs-target="#qr-url-pane" type="button" role="tab" aria-controls="qr-url-pane" aria-selected="false"><i class="bi bi-link-45deg me-2"></i>Tạo: URL</button>
+                  <button class="nav-link" id="qr-url-tab" data-bs-toggle="pill" data-bs-target="#qr-url-pane" type="button" role="tab" aria-controls="qr-url-pane" aria-selected="false"><i class="bi bi-link-45deg me-2"></i><span data-i18n="qrcode.tabs.createUrl">Tạo: URL</span></button>
                 </li>
                 <li class="nav-item" role="presentation">
-                  <button class="nav-link" id="qr-wifi-tab" data-bs-toggle="pill" data-bs-target="#qr-wifi-pane" type="button" role="tab" aria-controls="qr-wifi-pane" aria-selected="false"><i class="bi bi-wifi me-2"></i>Tạo: WiFi</button>
+                  <button class="nav-link" id="qr-wifi-tab" data-bs-toggle="pill" data-bs-target="#qr-wifi-pane" type="button" role="tab" aria-controls="qr-wifi-pane" aria-selected="false"><i class="bi bi-wifi me-2"></i><span data-i18n="qrcode.tabs.createWifi">Tạo: WiFi</span></button>
                 </li>
                 <li class="nav-item" role="presentation">
-                  <button class="nav-link" id="qr-vcard-tab" data-bs-toggle="pill" data-bs-target="#qr-vcard-pane" type="button" role="tab" aria-controls="qr-vcard-pane" aria-selected="false"><i class="bi bi-person-badge me-2"></i>Tạo: Danh thiếp</button>
+                  <button class="nav-link" id="qr-vcard-tab" data-bs-toggle="pill" data-bs-target="#qr-vcard-pane" type="button" role="tab" aria-controls="qr-vcard-pane" aria-selected="false"><i class="bi bi-person-badge me-2"></i><span data-i18n="qrcode.tabs.createVCard">Tạo: Danh thiếp</span></button>
                 </li>
                  <li class="nav-item" role="presentation">
-                  <button class="nav-link" id="qr-read-tab" data-bs-toggle="pill" data-bs-target="#qr-read-pane" type="button" role="tab" aria-controls="qr-read-pane" aria-selected="false"><i class="bi bi-upc-scan me-2"></i>Đọc Mã QR</button>
+                  <button class="nav-link" id="qr-read-tab" data-bs-toggle="pill" data-bs-target="#qr-read-pane" type="button" role="tab" aria-controls="qr-read-pane" aria-selected="false"><i class="bi bi-upc-scan me-2"></i><span data-i18n="qrcode.tabs.readQr">Đọc Mã QR</span></button>
                 </li>
               </ul>
 
@@ -271,40 +282,40 @@
               <div class="tab-content pt-2" id="qr-pills-content">
                 <!-- Text Pane -->
                 <div class="tab-pane fade show active" id="qr-text-pane" role="tabpanel" aria-labelledby="qr-text-tab">
-                  <textarea id="qr-text-input" class="form-control" rows="4" placeholder="Nhập văn bản của bạn ở đây..."></textarea>
+                  <textarea id="qr-text-input" class="form-control" rows="4" data-i18n-placeholder="qrcode.text.placeholder"></textarea>
                 </div>
                 <!-- URL Pane -->
                 <div class="tab-pane fade" id="qr-url-pane" role="tabpanel" aria-labelledby="qr-url-tab">
-                  <input type="url" id="qr-url-input" class="form-control" placeholder="https://www.example.com">
+                  <input type="url" id="qr-url-input" class="form-control" data-i18n-placeholder="qrcode.url.placeholder">
                 </div>
                 <!-- WiFi Pane -->
                 <div class="tab-pane fade" id="qr-wifi-pane" role="tabpanel" aria-labelledby="qr-wifi-tab">
                     <div class="mb-2">
-                        <input type="text" id="qr-wifi-ssid" class="form-control" placeholder="Tên mạng WiFi (SSID)">
+                        <input type="text" id="qr-wifi-ssid" class="form-control" data-i18n-placeholder="qrcode.wifi.ssidPlaceholder">
                     </div>
                     <div class="mb-2">
-                        <input type="password" id="qr-wifi-password" class="form-control" placeholder="Mật khẩu">
+                        <input type="password" id="qr-wifi-password" class="form-control" data-i18n-placeholder="qrcode.wifi.passwordPlaceholder">
                     </div>
                     <select id="qr-wifi-encryption" class="form-select">
                         <option value="WPA" selected>WPA/WPA2</option>
                         <option value="WEP">WEP</option>
-                        <option value="nopass">Không mã hoá</option>
+                        <option value="nopass" data-i18n="qrcode.wifi.noEncryption">Không mã hoá</option>
                     </select>
                 </div>
                 <!-- vCard Pane -->
                 <div class="tab-pane fade" id="qr-vcard-pane" role="tabpanel" aria-labelledby="qr-vcard-tab">
                     <div class="row g-2">
                         <div class="col-md-12 mb-2">
-                             <input type="text" id="qr-vcard-name" class="form-control" placeholder="Họ và Tên">
+                             <input type="text" id="qr-vcard-name" class="form-control" data-i18n-placeholder="qrcode.vcard.namePlaceholder">
                         </div>
                         <div class="col-md-6 mb-2">
-                             <input type="tel" id="qr-vcard-phone" class="form-control" placeholder="Số điện thoại">
+                             <input type="tel" id="qr-vcard-phone" class="form-control" data-i18n-placeholder="qrcode.vcard.phonePlaceholder">
                         </div>
                         <div class="col-md-6 mb-2">
-                             <input type="email" id="qr-vcard-email" class="form-control" placeholder="Email">
+                             <input type="email" id="qr-vcard-email" class="form-control" data-i18n-placeholder="qrcode.vcard.emailPlaceholder">
                         </div>
                          <div class="col-md-12">
-                             <input type="text" id="qr-vcard-org" class="form-control" placeholder="Tổ chức/Công ty">
+                             <input type="text" id="qr-vcard-org" class="form-control" data-i18n-placeholder="qrcode.vcard.orgPlaceholder">
                         </div>
                     </div>
                 </div>
@@ -313,34 +324,34 @@
                   <div id="qr-reader-uploader" class="upload-label-qr">
                     <label for="qr-upload-input" class="upload-label-internal">
                       <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                      <span>Nhấp để tải lên hoặc kéo & thả ảnh QR</span>
+                      <span data-i18n="qrcode.read.prompt">Nhấp để tải lên hoặc kéo & thả ảnh QR</span>
                     </label>
                     <input type="file" id="qr-upload-input" accept="image/*" class="hidden-input"/>
                   </div>
                   <div id="qr-reader-result-container" style="display: none;">
-                      <h4>Nội dung mã QR:</h4>
+                      <h4 data-i18n="qrcode.read.resultTitle">Nội dung mã QR:</h4>
                       <pre id="qr-reader-result-text"></pre>
                   </div>
                 </div>
               </div>
 
-              <button id="generate-btn" class="btn btn-primary w-100 mt-4">Tạo mã QR</button>
+              <button id="generate-btn" class="btn btn-primary w-100 mt-4" data-i18n="qrcode.generateButton">Tạo mã QR</button>
               <div id="qrcode-container" class="qrcode-container"></div>
               <p id="status-message"></p>
           </div>
         </div>
         <div class="tool-description mt-5 p-4 bg-light rounded">
-          <h2 class="h4">Giới thiệu Công cụ Mã QR Đa Năng</h2>
-          <p>Công cụ mã QR của chúng tôi là một giải pháp toàn diện, miễn phí và dễ sử dụng cho mọi nhu cầu liên quan đến QR code. Dù bạn cần <strong>tạo mã QR</strong> cho chiến dịch marketing, chia sẻ thông tin cá nhân, hay đơn giản là <strong>đọc mã QR</strong> từ một hình ảnh, chúng tôi đều có thể đáp ứng.</p>
-          <h3 class="h5 mt-3">Các tính năng chính:</h3>
+          <h2 class="h4" data-i18n="qrcode.desc.title">Giới thiệu Công cụ Mã QR Đa Năng</h2>
+          <p data-i18n="qrcode.desc.p1">Công cụ mã QR của chúng tôi là một giải pháp toàn diện, miễn phí và dễ sử dụng cho mọi nhu cầu liên quan đến QR code. Dù bạn cần <strong>tạo mã QR</strong> cho chiến dịch marketing, chia sẻ thông tin cá nhân, hay đơn giản là <strong>đọc mã QR</strong> từ một hình ảnh, chúng tôi đều có thể đáp ứng.</p>
+          <h3 class="h5 mt-3" data-i18n="qrcode.desc.featuresTitle">Các tính năng chính:</h3>
           <ul>
-            <li><strong>Tạo mã QR cho Văn bản:</strong> Chuyển đổi bất kỳ đoạn văn bản, ghi chú, hoặc tin nhắn nào thành mã QR một cách nhanh chóng.</li>
-            <li><strong>Tạo mã QR cho URL/Link:</strong> Dễ dàng tạo QR code để chia sẻ liên kết website, trang sản phẩm, hoặc mạng xã hội.</li>
-            <li><strong>Tạo mã QR WiFi:</strong> Giúp bạn bè và khách hàng kết nối vào mạng WiFi của bạn chỉ với một lần quét, không cần nhập mật khẩu.</li>
-            <li><strong>Tạo mã QR Danh thiếp (vCard):</strong> Tạo danh thiếp kỹ thuật số chứa thông tin liên hệ (tên, số điện thoại, email) để chia sẻ một cách chuyên nghiệp.</li>
-            <li><strong>Đọc mã QR từ ảnh:</strong> Bạn có một ảnh chứa mã QR? Chỉ cần tải ảnh lên, công cụ của chúng tôi sẽ <strong>quét và giải mã nội dung QR</strong> ngay lập tức.</li>
+            <li data-i18n="qrcode.desc.feature1"><strong>Tạo mã QR cho Văn bản:</strong> Chuyển đổi bất kỳ đoạn văn bản, ghi chú, hoặc tin nhắn nào thành mã QR một cách nhanh chóng.</li>
+            <li data-i18n="qrcode.desc.feature2"><strong>Tạo mã QR cho URL/Link:</strong> Dễ dàng tạo QR code để chia sẻ liên kết website, trang sản phẩm, hoặc mạng xã hội.</li>
+            <li data-i18n="qrcode.desc.feature3"><strong>Tạo mã QR WiFi:</strong> Giúp bạn bè và khách hàng kết nối vào mạng WiFi của bạn chỉ với một lần quét, không cần nhập mật khẩu.</li>
+            <li data-i18n="qrcode.desc.feature4"><strong>Tạo mã QR Danh thiếp (vCard):</strong> Tạo danh thiếp kỹ thuật số chứa thông tin liên hệ (tên, số điện thoại, email) để chia sẻ một cách chuyên nghiệp.</li>
+            <li data-i18n="qrcode.desc.feature5"><strong>Đọc mã QR từ ảnh:</strong> Bạn có một ảnh chứa mã QR? Chỉ cần tải ảnh lên, công cụ của chúng tôi sẽ <strong>quét và giải mã nội dung QR</strong> ngay lập tức.</li>
           </ul>
-          <p>Đây là công cụ QR trực tuyến hoàn hảo cho cá nhân, doanh nghiệp nhỏ và các nhà tiếp thị muốn tận dụng sức mạnh của mã QR một cách hiệu quả và an toàn.</p>
+          <p data-i18n="qrcode.desc.p2">Đây là công cụ QR trực tuyến hoàn hảo cho cá nhân, doanh nghiệp nhỏ và các nhà tiếp thị muốn tận dụng sức mạnh của mã QR một cách hiệu quả và an toàn.</p>
         </div>
       </div>
 
@@ -352,7 +363,7 @@
                 <div id="uploader" class="uploader-section">
                   <label for="upload-input" class="upload-label">
                     <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                    <span>Nhấp để tải lên hoặc kéo &amp; thả</span>
+                    <span data-i18n="image.uploader.prompt">Nhấp để tải lên hoặc kéo &amp; thả</span>
                   </label>
                   <input type="file" id="upload-input" accept="image/*,.heic,.heif" class="hidden" />
                 </div>
@@ -361,37 +372,37 @@
                   <aside class="controls-panel">
                     <div class="controls-main">
                       <nav class="tabs">
-                        <button class="tab-btn active" data-tab="resize">Đổi kích thước</button>
-                        <button class="tab-btn" data-tab="crop">Cắt ảnh</button>
-                        <button class="tab-btn" data-tab="rotate">Xoay</button>
-                        <button class="tab-btn" data-tab="censor">Làm mờ</button>
-                        <button class="tab-btn" data-tab="export">Xuất ảnh</button>
+                        <button class="tab-btn active" data-tab="resize" data-i18n="image.tabs.resize">Đổi kích thước</button>
+                        <button class="tab-btn" data-tab="crop" data-i18n="image.tabs.crop">Cắt ảnh</button>
+                        <button class="tab-btn" data-tab="rotate" data-i18n="image.tabs.rotate">Xoay</button>
+                        <button class="tab-btn" data-tab="censor" data-i18n="image.tabs.censor">Làm mờ</button>
+                        <button class="tab-btn" data-tab="export" data-i18n="image.tabs.export">Xuất ảnh</button>
                       </nav>
-                      <div id="resize-controls" class="tab-content active"><h3>Đổi kích thước ảnh</h3><div class="control-group"><label for="width-input">Rộng:</label><input type="number" id="width-input" min="1" /></div><div class="control-group"><label for="height-input">Cao:</label><input type="number" id="height-input" min="1" /></div><div class="control-group checkbox-group"><input type="checkbox" id="aspect-ratio-lock" checked><label for="aspect-ratio-lock">Giữ tỷ lệ</label></div><button id="apply-resize-btn" class="action-btn">Áp dụng</button></div>
-                      <div id="crop-controls" class="tab-content"><h3>Cắt ảnh</h3><p class="instructions">Kéo các góc/cạnh để đổi kích thước hoặc kéo từ giữa để di chuyển khung cắt.</p><div class="control-group"><label>Tỷ lệ:</label><div class="aspect-ratio-presets"><button class="aspect-btn active" data-ratio="free">Tự do</button><button class="aspect-btn" data-ratio="1,1">Vuông</button><button class="aspect-btn" data-ratio="4,3">4:3</button><button class="aspect-btn" data-ratio="3,4">3:4</button><button class="aspect-btn" data-ratio="16,9">16:9</button><button class="aspect-btn" data-ratio="9,16">9:16</button></div></div><div class="crop-inputs"><div class="control-group"><label for="crop-x">X:</label><input type="number" id="crop-x" /></div><div class="control-group"><label for="crop-y">Y:</label><input type="number" id="crop-y" /></div><div class="control-group"><label for="crop-width">Rộng:</label><input type="number" id="crop-width" /></div><div class="control-group"><label for="crop-height">Cao:</label><input type="number" id="crop-height" /></div></div><button id="apply-crop-btn" class="action-btn" disabled>Áp dụng cắt</button></div>
-                      <div id="rotate-controls" class="tab-content"><h3>Xoay ảnh</h3><p class="instructions">Sử dụng thanh trượt để tinh chỉnh góc xoay hoặc các nút để xoay nhanh.</p><div class="control-group"><label for="rotation-slider">Góc xoay (tinh chỉnh): <span id="rotation-value">0</span>°</label><input type="range" id="rotation-slider" min="-45" max="45" step="1" value="0" class="form-range" style="width: 100%;"></div><div class="control-group-row mt-3"><button id="apply-rotate-btn" class="action-btn">Áp dụng xoay</button><button id="reset-rotate-btn" class="action-btn secondary-style">Reset góc xoay</button></div><hr style="margin: 2rem 0;"><div class="control-group-row"><button id="rotate-left-btn" class="action-btn secondary-style">Xoay Trái 90°</button><button id="rotate-right-btn" class="action-btn secondary-style">Xoay Phải 90°</button></div></div>
-                      <div id="censor-controls" class="tab-content"><h3>Che thông tin (Pixelate)</h3><p class="instructions">Nhấp và kéo trên ảnh để chọn vùng cần làm mờ.</p><div class="control-group"><label for="pixelate-intensity-slider">Kích thước pixel: <span id="pixelate-value">10</span>px</label><input type="range" id="pixelate-intensity-slider" min="4" max="40" step="2" value="10" /></div><button id="apply-censor-btn" class="action-btn" disabled>Áp dụng làm mờ</button><p class="instructions small-text">Lưu ý: Hành động này sẽ áp dụng hiệu ứng trực tiếp lên ảnh.</p></div>
-                      <div id="export-controls" class="tab-content"><h3>Xuất ảnh</h3><div class="control-group"><label for="format-select">Định dạng:</label><select id="format-select"><option value="image/jpeg" selected>JPEG</option><option value="image/png">PNG</option><option value="image/webp">WebP</option></select></div><div class="control-group" id="quality-control"><label for="quality-slider">Chất lượng: <span id="quality-value">1</span></label><input type="range" id="quality-slider" min="0.1" max="1" step="0.05" value="1" /></div><div class="control-group"><p class="file-size-info">Kích thước ước tính: <strong id="estimated-size">...</strong></p></div><button id="download-btn" class="action-btn">Tải ảnh</button></div>
+                      <div id="resize-controls" class="tab-content active"><h3 data-i18n="image.resize.title">Đổi kích thước ảnh</h3><div class="control-group"><label for="width-input" data-i18n="image.resize.width">Rộng:</label><input type="number" id="width-input" min="1" /></div><div class="control-group"><label for="height-input" data-i18n="image.resize.height">Cao:</label><input type="number" id="height-input" min="1" /></div><div class="control-group checkbox-group"><input type="checkbox" id="aspect-ratio-lock" checked><label for="aspect-ratio-lock" data-i18n="image.resize.keepRatio">Giữ tỷ lệ</label></div><button id="apply-resize-btn" class="action-btn" data-i18n="common.apply">Áp dụng</button></div>
+                      <div id="crop-controls" class="tab-content"><h3 data-i18n="image.crop.title">Cắt ảnh</h3><p class="instructions" data-i18n="image.crop.instructions">Kéo các góc/cạnh để đổi kích thước hoặc kéo từ giữa để di chuyển khung cắt.</p><div class="control-group"><label data-i18n="image.crop.ratio">Tỷ lệ:</label><div class="aspect-ratio-presets"><button class="aspect-btn active" data-ratio="free" data-i18n="image.crop.ratioFree">Tự do</button><button class="aspect-btn" data-ratio="1,1" data-i18n="image.crop.ratioSquare">Vuông</button><button class="aspect-btn" data-ratio="4,3">4:3</button><button class="aspect-btn" data-ratio="3,4">3:4</button><button class="aspect-btn" data-ratio="16,9">16:9</button><button class="aspect-btn" data-ratio="9,16">9:16</button></div></div><div class="crop-inputs"><div class="control-group"><label for="crop-x">X:</label><input type="number" id="crop-x" /></div><div class="control-group"><label for="crop-y">Y:</label><input type="number" id="crop-y" /></div><div class="control-group"><label for="crop-width" data-i18n="image.resize.width">Rộng:</label><input type="number" id="crop-width" /></div><div class="control-group"><label for="crop-height" data-i18n="image.resize.height">Cao:</label><input type="number" id="crop-height" /></div></div><button id="apply-crop-btn" class="action-btn" disabled data-i18n="image.crop.apply">Áp dụng cắt</button></div>
+                      <div id="rotate-controls" class="tab-content"><h3 data-i18n="image.rotate.title">Xoay ảnh</h3><p class="instructions" data-i18n="image.rotate.instructions">Sử dụng thanh trượt để tinh chỉnh góc xoay hoặc các nút để xoay nhanh.</p><div class="control-group"><label for="rotation-slider"><span data-i18n="image.rotate.angle">Góc xoay (tinh chỉnh):</span> <span id="rotation-value">0</span>°</label><input type="range" id="rotation-slider" min="-45" max="45" step="1" value="0" class="form-range" style="width: 100%;"></div><div class="control-group-row mt-3"><button id="apply-rotate-btn" class="action-btn" data-i18n="image.rotate.apply">Áp dụng xoay</button><button id="reset-rotate-btn" class="action-btn secondary-style" data-i18n="image.rotate.reset">Reset góc xoay</button></div><hr style="margin: 2rem 0;"><div class="control-group-row"><button id="rotate-left-btn" class="action-btn secondary-style" data-i18n="image.rotate.left90">Xoay Trái 90°</button><button id="rotate-right-btn" class="action-btn secondary-style" data-i18n="image.rotate.right90">Xoay Phải 90°</button></div></div>
+                      <div id="censor-controls" class="tab-content"><h3 data-i18n="image.censor.title">Che thông tin (Pixelate)</h3><p class="instructions" data-i18n="image.censor.instructions">Nhấp và kéo trên ảnh để chọn vùng cần làm mờ.</p><div class="control-group"><label for="pixelate-intensity-slider"><span data-i18n="image.censor.pixelSize">Kích thước pixel:</span> <span id="pixelate-value">10</span>px</label><input type="range" id="pixelate-intensity-slider" min="4" max="40" step="2" value="10" /></div><button id="apply-censor-btn" class="action-btn" disabled data-i18n="image.censor.apply">Áp dụng làm mờ</button><p class="instructions small-text" data-i18n="image.censor.note">Lưu ý: Hành động này sẽ áp dụng hiệu ứng trực tiếp lên ảnh.</p></div>
+                      <div id="export-controls" class="tab-content"><h3 data-i18n="image.export.title">Xuất ảnh</h3><div class="control-group"><label for="format-select" data-i18n="image.export.format">Định dạng:</label><select id="format-select"><option value="image/jpeg" selected>JPEG</option><option value="image/png">PNG</option><option value="image/webp">WebP</option></select></div><div class="control-group" id="quality-control"><label for="quality-slider"><span data-i18n="image.export.quality">Chất lượng:</span> <span id="quality-value">1</span></label><input type="range" id="quality-slider" min="0.1" max="1" step="0.05" value="1" /></div><div class="control-group"><p class="file-size-info"><span data-i18n="image.export.estimatedSize">Kích thước ước tính:</span> <strong id="estimated-size">...</strong></p></div><button id="download-btn" class="action-btn" data-i18n="image.export.download">Tải ảnh</button></div>
                     </div>
-                    <div class="controls-footer"><div class="history-buttons"><button id="undo-btn" class="secondary-btn" disabled>Hoàn tác</button><button id="redo-btn" class="secondary-btn" disabled>Làm lại</button></div><button id="reset-btn" class="reset-btn">Tải ảnh mới</button></div>
+                    <div class="controls-footer"><div class="history-buttons"><button id="undo-btn" class="secondary-btn" disabled data-i18n="common.undo">Hoàn tác</button><button id="redo-btn" class="secondary-btn" disabled data-i18n="common.redo">Làm lại</button></div><button id="reset-btn" class="reset-btn" data-i18n="image.uploader.newImage">Tải ảnh mới</button></div>
                   </aside>
                 </div>
               </main>
             </div>
         </div>
         <div class="tool-description mt-5 p-4 bg-light rounded">
-          <h2 class="h4">Giới thiệu Trình Chỉnh Sửa Ảnh Online Miễn Phí</h2>
-          <p>Trình chỉnh sửa ảnh của chúng tôi cung cấp các công cụ thiết yếu để bạn có thể xử lý hình ảnh một cách nhanh chóng ngay trên trình duyệt mà không cần cài đặt phần mềm. Đây là giải pháp hoàn hảo để thực hiện các thao tác <strong>chỉnh sửa ảnh cơ bản</strong> một cách hiệu quả.</p>
-          <h3 class="h5 mt-3">Các tính năng chính:</h3>
+          <h2 class="h4" data-i18n="image.desc.title">Giới thiệu Trình Chỉnh Sửa Ảnh Online Miễn Phí</h2>
+          <p data-i18n="image.desc.p1">Trình chỉnh sửa ảnh của chúng tôi cung cấp các công cụ thiết yếu để bạn có thể xử lý hình ảnh một cách nhanh chóng ngay trên trình duyệt mà không cần cài đặt phần mềm. Đây là giải pháp hoàn hảo để thực hiện các thao tác <strong>chỉnh sửa ảnh cơ bản</strong> một cách hiệu quả.</p>
+          <h3 class="h5 mt-3" data-i18n="qrcode.desc.featuresTitle">Các tính năng chính:</h3>
           <ul>
-            <li><strong>Thay đổi kích thước ảnh:</strong> Dễ dàng điều chỉnh chiều rộng và chiều cao của ảnh theo pixel, có hoặc không giữ tỷ lệ khung hình gốc.</li>
-            <li><strong>Cắt ảnh online:</strong> Công cụ <strong>cắt ảnh</strong> linh hoạt với các tỷ lệ đặt trước (vuông, 16:9, 4:3) hoặc cắt tự do để lấy đúng khung hình bạn muốn.</li>
-            <li><strong>Xoay và lật ảnh:</strong> Xoay ảnh theo góc tùy chỉnh hoặc xoay nhanh 90 độ, giúp điều chỉnh hướng ảnh một cách chính xác.</li>
-            <li><strong>Làm mờ / Che thông tin (Pixelate):</strong> Bảo mật thông tin nhạy cảm như khuôn mặt, biển số xe, hoặc văn bản bằng cách <strong>làm mờ vùng ảnh</strong> bạn chọn.</li>
-            <li><strong>Làm giảm dung lượng ảnh:</strong> Giảm dung lương ảnh, xuất ảnh JPEG với dung lượng thấp hơn theo ý muốn.</li>
-            <li><strong>Xuất ảnh chất lượng cao:</strong> Lưu tác phẩm của bạn dưới các định dạng phổ biến như PNG, JPEG, hoặc WebP với tùy chọn điều chỉnh chất lượng.</li>
+            <li data-i18n="image.desc.feature1"><strong>Thay đổi kích thước ảnh:</strong> Dễ dàng điều chỉnh chiều rộng và chiều cao của ảnh theo pixel, có hoặc không giữ tỷ lệ khung hình gốc.</li>
+            <li data-i18n="image.desc.feature2"><strong>Cắt ảnh online:</strong> Công cụ <strong>cắt ảnh</strong> linh hoạt với các tỷ lệ đặt trước (vuông, 16:9, 4:3) hoặc cắt tự do để lấy đúng khung hình bạn muốn.</li>
+            <li data-i18n="image.desc.feature3"><strong>Xoay và lật ảnh:</strong> Xoay ảnh theo góc tùy chỉnh hoặc xoay nhanh 90 độ, giúp điều chỉnh hướng ảnh một cách chính xác.</li>
+            <li data-i18n="image.desc.feature4"><strong>Làm mờ / Che thông tin (Pixelate):</strong> Bảo mật thông tin nhạy cảm như khuôn mặt, biển số xe, hoặc văn bản bằng cách <strong>làm mờ vùng ảnh</strong> bạn chọn.</li>
+            <li data-i18n="image.desc.feature5"><strong>Làm giảm dung lượng ảnh:</strong> Giảm dung lương ảnh, xuất ảnh JPEG với dung lượng thấp hơn theo ý muốn.</li>
+            <li data-i18n="image.desc.feature6"><strong>Xuất ảnh chất lượng cao:</strong> Lưu tác phẩm của bạn dưới các định dạng phổ biến như PNG, JPEG, hoặc WebP với tùy chọn điều chỉnh chất lượng.</li>
           </ul>
-          <p>Với giao diện trực quan và các tính năng mạnh mẽ, công cụ chỉnh sửa ảnh miễn phí này là người bạn đồng hành lý tưởng cho mọi nhu cầu xử lý ảnh hàng ngày.</p>
+          <p data-i18n="image.desc.p2">Với giao diện trực quan và các tính năng mạnh mẽ, công cụ chỉnh sửa ảnh miễn phí này là người bạn đồng hành lý tưởng cho mọi nhu cầu xử lý ảnh hàng ngày.</p>
         </div>
       </div>
     </div>
