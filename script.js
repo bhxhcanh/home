@@ -16,6 +16,560 @@ let authModalInstance;
 let changePasswordModalInstance;
 let otpTimerInterval;
 
+// --- I18n & Language Management ---
+let currentLang = 'vi'; // Default language
+
+const translations = {
+    en: {
+        pageTitle: "Online Tools",
+        common: {
+            apply: "Apply",
+            close: "Close",
+            saveChanges: "Save Changes",
+            undo: "Undo",
+            redo: "Redo",
+        },
+        nav: {
+            brand: "Online Tools",
+            notifications: "Notifications",
+            bhyt: "BHYT Expiration",
+            qrcode: "QR Code Tool",
+            imageEditor: "Image Editor",
+        },
+        auth: {
+            loginTitle: "Login",
+            registerTitle: "Register",
+            forgotPasswordTitle: "Forgot Password",
+            resetPasswordTitle: "Reset Password",
+            deviceVerificationTitle: "Device Verification",
+            email: "Email",
+            password: "Password",
+            loginButton: "Login",
+            forgotPasswordLink: "Forgot password?",
+            registerLink: "Register",
+            fullName: "Full Name",
+            cccd: "Citizen ID",
+            registerButton: "Register",
+            backToLogin: "Back to login",
+            forgotPasswordPrompt: "Enter your email",
+            sendOtpButton: "Send OTP",
+            resetPasswordPrompt: "An OTP code has been sent to email",
+            resetPasswordPrompt2: "Please enter the code below.",
+            otpCode: "OTP Code",
+            newPassword: "New password",
+            resetPasswordButton: "Reset Password",
+            deviceVerificationPrompt: "This is your first time logging in from this device. For security, we've sent an OTP to your email.",
+            verifyAndLoginButton: "Verify and Login",
+            backButton: "Back",
+            messages: {
+                fillFields: "Please enter email and password.",
+                loginError: "Connection error. Please try again.",
+                fillAllFields: "Please fill in all information.",
+                invalidEmail: "Invalid email format.",
+                invalidCccd: "Citizen ID must be 12 digits.",
+                invalidPassword: "Password must be at least 8 characters, including at least 1 uppercase letter and 1 number.",
+                registrationError: "Connection error. Please try again.",
+                enterEmail: "Please enter your email.",
+                sending: "Sending...",
+                forgotPasswordError: "Connection error. Please try again.",
+                enterOtpAndPass: "Please enter OTP and new password.",
+                invalidNewPassword: "New password must be at least 8 characters, including at least 1 uppercase letter and 1 number.",
+                resetPasswordError: "Connection error. Please try again.",
+                enterOtp: "Please enter the OTP code.",
+                sessionExpired: "Session expired. Please log back in.",
+            }
+        },
+        user: {
+            greeting: "Hello, {{fullName}}",
+            changePassword: "Change Password",
+            logout: "Logout",
+            loginRegister: "Login / Register",
+            changePasswordTitle: "Change Password",
+            currentPassword: "Current password",
+            confirmNewPassword: "Confirm new password",
+            messages: {
+                fillAllFields: "Please fill all fields.",
+                passwordsMismatch: "New passwords do not match.",
+                changePasswordError: "Connection error. Please try again.",
+            }
+        },
+        notifications: {
+            title: "Notifications",
+            loading: "Loading notifications...",
+            iframeTitle: "Notifications from Administrator",
+            configError: "Configuration error. Please contact the administrator.",
+            fetchError: "System error while loading notifications.",
+        },
+        bhyt: {
+            title: "List of expiring BHYT by collection staff",
+            dueSoonButton: "Due ±30 days",
+            expiredRecentlyButton: "Expired 30–90 days",
+            exportButton: "Export Excel",
+            loading: "Loading data...",
+            noData: "No data available.",
+            noDataToExport: "No data to export. Please load and filter data first.",
+            headers: {
+                hanTheDen: "Expiry Date",
+                hoTen: "Full Name",
+                gioiTinh: "Gender",
+                ngaySinh: "Date of Birth",
+                soDienThoai: "Phone Number",
+                diaChiLh: "Contact Address",
+                maPb: "Dept. Code",
+                soCmnd: "ID/CCCD",
+                maBv: "Hospital Code",
+                soKcb: "KCB No.",
+                maDvi: "Unit Code"
+            },
+            filters: {
+                datePlaceholder: ">, <, =dd/mm/yyyy",
+                namePlaceholder: "Filter name...",
+                genderAll: "All",
+                genderMale: "Male",
+                genderFemale: "Female",
+                phonePlaceholder: "Filter phone...",
+                addressPlaceholder: "Filter address...",
+                codePlaceholder: "Filter code...",
+                cccdPlaceholder: "Filter CCCD...",
+                numberPlaceholder: "Filter number...",
+            },
+            messages: {
+              sessionExpired: "Session has expired. Please log in again.",
+              fetchError: "System error while loading data.",
+            }
+        },
+        qrcode: {
+            title: "QR Code Tool",
+            subtitle: "Select the function you want to use.",
+            tabs: {
+                createText: "Create: Text",
+                createUrl: "Create: URL",
+                createWifi: "Create: WiFi",
+                createVCard: "Create: vCard",
+                readQr: "Read QR Code",
+            },
+            generateButton: "Generate QR Code",
+            text: {
+                placeholder: "Enter your text here...",
+            },
+            url: {
+                placeholder: "https://www.example.com",
+            },
+            wifi: {
+                ssidPlaceholder: "WiFi Network Name (SSID)",
+                passwordPlaceholder: "Password",
+                noEncryption: "No encryption",
+            },
+            vcard: {
+                namePlaceholder: "Full Name",
+                phonePlaceholder: "Phone Number",
+                emailPlaceholder: "Email",
+                orgPlaceholder: "Organization/Company",
+            },
+            read: {
+                prompt: "Click to upload or drag & drop a QR image",
+                resultTitle: "QR Code Content:",
+                filePrompt: "Please select an image file.",
+                notFound: "QR Code not found in the image.",
+            },
+            messages: {
+                generationError: "Could not generate QR code. Data might be too long.",
+                enterData: "Please enter data to generate a QR code.",
+            },
+            desc: {
+                title: "About the All-in-One QR Code Tool",
+                p1: "Our QR code tool is a comprehensive, free, and easy-to-use solution for all your QR code needs. Whether you need to <strong>generate a QR code</strong> for a marketing campaign, share personal information, or simply <strong>read a QR code</strong> from an image, we've got you covered.",
+                featuresTitle: "Key features:",
+                feature1: "<strong>Generate QR for Text:</strong> Quickly convert any text snippet, note, or message into a QR code.",
+                feature2: "<strong>Generate QR for URL/Link:</strong> Easily create a QR code to share website links, product pages, or social media profiles.",
+                feature3: "<strong>Generate QR for WiFi:</strong> Help friends and customers connect to your WiFi network with a single scan, no password typing needed.",
+                feature4: "<strong>Generate QR for vCard:</strong> Create a digital business card with contact information (name, phone, email) for professional sharing.",
+                feature5: "<strong>Read QR from Image:</strong> Have an image with a QR code? Just upload it, and our tool will instantly <strong>scan and decode the QR content</strong>.",
+                p2: "This is the perfect online QR tool for individuals, small businesses, and marketers looking to leverage the power of QR codes effectively and securely.",
+            }
+        },
+        image: {
+            uploader: {
+                prompt: "Click to upload or drag & drop",
+                newImage: "Load new image",
+                heicError: "Error converting HEIC file. Please try another image.",
+                loadError: "Could not load image. The file may be corrupt or unsupported.",
+                confirmReset: "Load a new image? All changes will be lost.",
+            },
+            tabs: {
+                resize: "Resize",
+                crop: "Crop",
+                rotate: "Rotate",
+                censor: "Censor",
+                export: "Export"
+            },
+            resize: {
+                title: "Resize Image",
+                width: "Width:",
+                height: "Height:",
+                keepRatio: "Keep aspect ratio",
+                invalidSize: "Invalid dimensions.",
+            },
+            crop: {
+                title: "Crop Image",
+                instructions: "Drag the corners/edges to resize or drag from the center to move the crop box.",
+                ratio: "Aspect Ratio:",
+                ratioFree: "Free",
+                ratioSquare: "Square",
+                apply: "Apply Crop",
+            },
+            rotate: {
+                title: "Rotate Image",
+                instructions: "Use the slider for fine-tuning or the buttons for quick rotation.",
+                angle: "Angle (fine-tune):",
+                apply: "Apply Rotation",
+                reset: "Reset Angle",
+                left90: "Rotate Left 90°",
+                right90: "Rotate Right 90°",
+            },
+            censor: {
+                title: "Censor Info (Pixelate)",
+                instructions: "Click and drag on the image to select the area to pixelate.",
+                pixelSize: "Pixel size:",
+                apply: "Apply Pixelation",
+                note: "Note: This action applies the effect directly to the image.",
+            },
+            export: {
+                title: "Export Image",
+                format: "Format:",
+                quality: "Quality:",
+                estimatedSize: "Estimated size:",
+                download: "Download Image"
+            },
+            desc: {
+                title: "About the Free Online Image Editor",
+                p1: "Our image editor provides essential tools for you to quickly process images right in your browser without installing any software. This is the perfect solution for performing basic <strong>image editing</strong> tasks efficiently.",
+                feature1: "<strong>Resize Image:</strong> Easily adjust the width and height of the image by pixels, with or without maintaining the original aspect ratio.",
+                feature2: "<strong>Crop Image Online:</strong> A flexible <strong>cropping tool</strong> with preset ratios (square, 16:9, 4:3) or freeform cropping to get the exact frame you want.",
+                feature3: "<strong>Rotate and Flip Image:</strong> Rotate images to a custom angle or quickly by 90 degrees, helping you adjust the orientation precisely.",
+                feature4: "<strong>Blur / Censor Info (Pixelate):</strong> Secure sensitive information like faces, license plates, or text by <strong>pixelating the area</strong> you select.",
+                feature5: "<strong>Reduce Image File Size:</strong> Reduce the file size by exporting JPEG images with your desired quality.",
+                feature6: "<strong>Export High-Quality Images:</strong> Save your work in popular formats like PNG, JPEG, or WebP with adjustable quality options.",
+                p2: "With an intuitive interface and powerful features, this free image editing tool is the ideal companion for all your daily image processing needs."
+            }
+        },
+        otp: {
+            resendMessage: "Resend code after {{timer}}s",
+            resendLink: "Resend OTP"
+        }
+    },
+    vi: {
+        pageTitle: "Công cụ trực tuyến",
+        common: {
+            apply: "Áp dụng",
+            close: "Đóng",
+            saveChanges: "Lưu thay đổi",
+            undo: "Hoàn tác",
+            redo: "Làm lại",
+        },
+        nav: {
+            brand: "Công cụ trực tuyến",
+            notifications: "Thông báo",
+            bhyt: "Dữ liệu đáo hạn BHYT",
+            qrcode: "Công cụ QR Code",
+            imageEditor: "Chỉnh sửa ảnh",
+        },
+        auth: {
+            loginTitle: "Đăng nhập",
+            registerTitle: "Đăng ký",
+            forgotPasswordTitle: "Quên mật khẩu",
+            resetPasswordTitle: "Đặt lại mật khẩu",
+            deviceVerificationTitle: "Xác thực thiết bị",
+            email: "Email",
+            password: "Mật khẩu",
+            loginButton: "Đăng nhập",
+            forgotPasswordLink: "Quên mật khẩu?",
+            registerLink: "Đăng ký",
+            fullName: "Họ và tên",
+            cccd: "Số CCCD",
+            registerButton: "Đăng ký",
+            backToLogin: "Quay lại đăng nhập",
+            forgotPasswordPrompt: "Nhập email của bạn",
+            sendOtpButton: "Gửi OTP",
+            resetPasswordPrompt: "Một mã OTP đã được gửi đến email",
+            resetPasswordPrompt2: "Vui lòng nhập mã đó bên dưới.",
+            otpCode: "Mã OTP",
+            newPassword: "Mật khẩu mới",
+            resetPasswordButton: "Đặt lại mật khẩu",
+            deviceVerificationPrompt: "Đây là lần đầu bạn đăng nhập từ thiết bị này. Để bảo mật, chúng tôi đã gửi mã OTP tới email của bạn.",
+            verifyAndLoginButton: "Xác thực và Đăng nhập",
+            backButton: "Quay lại",
+            messages: {
+                fillFields: "Vui lòng nhập email và mật khẩu.",
+                loginError: "Lỗi kết nối. Vui lòng thử lại.",
+                fillAllFields: "Vui lòng điền đầy đủ thông tin.",
+                invalidEmail: "Định dạng email không hợp lệ.",
+                invalidCccd: "Số CCCD phải là 12 ký tự số.",
+                invalidPassword: "Mật khẩu phải có ít nhất 8 ký tự, bao gồm ít nhất 1 chữ hoa và 1 chữ số.",
+                registrationError: "Lỗi kết nối. Vui lòng thử lại.",
+                enterEmail: "Vui lòng nhập email.",
+                sending: "Đang gửi...",
+                forgotPasswordError: "Lỗi kết nối. Vui lòng thử lại.",
+                enterOtpAndPass: "Vui lòng nhập OTP và mật khẩu mới.",
+                invalidNewPassword: "Mật khẩu mới phải có ít nhất 8 ký tự, bao gồm ít nhất 1 chữ hoa và 1 chữ số.",
+                resetPasswordError: "Lỗi kết nối. Vui lòng thử lại.",
+                enterOtp: "Vui lòng nhập mã OTP.",
+                sessionExpired: "Phiên làm việc đã hết hạn. Vui lòng quay lại và đăng nhập.",
+            }
+        },
+        user: {
+            greeting: "Xin chào, {{fullName}}",
+            changePassword: "Đổi mật khẩu",
+            logout: "Đăng xuất",
+            loginRegister: "Đăng nhập / Đăng ký",
+            changePasswordTitle: "Đổi mật khẩu",
+            currentPassword: "Mật khẩu hiện tại",
+            confirmNewPassword: "Xác nhận mật khẩu mới",
+            messages: {
+                fillAllFields: "Vui lòng điền đầy đủ các trường.",
+                passwordsMismatch: "Mật khẩu mới không khớp.",
+                changePasswordError: "Lỗi kết nối. Vui lòng thử lại.",
+            }
+        },
+        notifications: {
+            title: "Thông báo",
+            loading: "Đang tải thông báo...",
+            iframeTitle: "Thông báo từ quản trị viên",
+            configError: "Lỗi cấu hình. Vui lòng liên hệ quản trị viên.",
+            fetchError: "Lỗi hệ thống khi tải thông báo.",
+        },
+        bhyt: {
+            title: "Danh sách BHYT đến hạn theo từng nhân viên thu",
+            dueSoonButton: "Hạn ±30 ngày",
+            expiredRecentlyButton: "Hết 30–90 ngày",
+            exportButton: "Xuất Excel",
+            loading: "Đang tải dữ liệu...",
+            noData: "Không có dữ liệu",
+            noDataToExport: "Không có dữ liệu để xuất. Vui lòng tải và lọc dữ liệu trước.",
+            headers: {
+                hanTheDen: "Hạn thẻ đến",
+                hoTen: "Họ tên",
+                gioiTinh: "Giới tính",
+                ngaySinh: "Ngày sinh",
+                soDienThoai: "Số điện thoại",
+                diaChiLh: "Địa chỉ LH",
+                maPb: "Mã PB",
+                soCmnd: "Số CMND/CCCD",
+                maBv: "Mã BV",
+                soKcb: "Số KCB",
+                maDvi: "Mã ĐV"
+            },
+            filters: {
+                datePlaceholder: ">, <, =dd/mm/yyyy",
+                namePlaceholder: "Lọc tên...",
+                genderAll: "Tất cả",
+                genderMale: "Nam",
+                genderFemale: "Nữ",
+                phonePlaceholder: "Lọc SĐT...",
+                addressPlaceholder: "Lọc địa chỉ...",
+                codePlaceholder: "Lọc mã...",
+                cccdPlaceholder: "Lọc CCCD...",
+                numberPlaceholder: "Lọc số...",
+            },
+            messages: {
+              sessionExpired: "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
+              fetchError: "Lỗi hệ thống khi tải dữ liệu.",
+            }
+        },
+        qrcode: {
+            title: "Công cụ mã QR Code",
+            subtitle: "Chọn chức năng bạn muốn sử dụng.",
+            tabs: {
+                createText: "Tạo: Văn bản",
+                createUrl: "Tạo: URL",
+                createWifi: "Tạo: WiFi",
+                createVCard: "Tạo: Danh thiếp",
+                readQr: "Đọc Mã QR",
+            },
+            generateButton: "Tạo mã QR",
+            text: {
+                placeholder: "Nhập văn bản của bạn ở đây...",
+            },
+            url: {
+                placeholder: "https://www.example.com",
+            },
+            wifi: {
+                ssidPlaceholder: "Tên mạng WiFi (SSID)",
+                passwordPlaceholder: "Mật khẩu",
+                noEncryption: "Không mã hoá",
+            },
+            vcard: {
+                namePlaceholder: "Họ và Tên",
+                phonePlaceholder: "Số điện thoại",
+                emailPlaceholder: "Email",
+                orgPlaceholder: "Tổ chức/Công ty",
+            },
+            read: {
+                prompt: "Nhấp để tải lên hoặc kéo & thả ảnh QR",
+                resultTitle: "Nội dung mã QR:",
+                filePrompt: "Vui lòng chọn một tệp ảnh.",
+                notFound: "Không tìm thấy mã QR trong ảnh.",
+            },
+            messages: {
+                generationError: "Không thể tạo mã QR. Dữ liệu có thể quá dài.",
+                enterData: "Vui lòng nhập dữ liệu để tạo mã QR.",
+            },
+            desc: {
+                title: "Giới thiệu Công cụ Mã QR Đa Năng",
+                p1: "Công cụ mã QR của chúng tôi là một giải pháp toàn diện, miễn phí và dễ sử dụng cho mọi nhu cầu liên quan đến QR code. Dù bạn cần <strong>tạo mã QR</strong> cho chiến dịch marketing, chia sẻ thông tin cá nhân, hay đơn giản là <strong>đọc mã QR</strong> từ một hình ảnh, chúng tôi đều có thể đáp ứng.",
+                featuresTitle: "Các tính năng chính:",
+                feature1: "<strong>Tạo mã QR cho Văn bản:</strong> Chuyển đổi bất kỳ đoạn văn bản, ghi chú, hoặc tin nhắn nào thành mã QR một cách nhanh chóng.",
+                feature2: "<strong>Tạo mã QR cho URL/Link:</strong> Dễ dàng tạo QR code để chia sẻ liên kết website, trang sản phẩm, hoặc mạng xã hội.",
+                feature3: "<strong>Tạo mã QR WiFi:</strong> Giúp bạn bè và khách hàng kết nối vào mạng WiFi của bạn chỉ với một lần quét, không cần nhập mật khẩu.",
+                feature4: "<strong>Tạo mã QR Danh thiếp (vCard):</strong> Tạo danh thiếp kỹ thuật số chứa thông tin liên hệ (tên, số điện thoại, email) để chia sẻ một cách chuyên nghiệp.",
+                feature5: "<strong>Đọc mã QR từ ảnh:</strong> Bạn có một ảnh chứa mã QR? Chỉ cần tải ảnh lên, công cụ của chúng tôi sẽ <strong>quét và giải mã nội dung QR</strong> ngay lập tức.",
+                p2: "Đây là công cụ QR trực tuyến hoàn hảo cho cá nhân, doanh nghiệp nhỏ và các nhà tiếp thị muốn tận dụng sức mạnh của mã QR một cách hiệu quả và an toàn.",
+            }
+        },
+        image: {
+            uploader: {
+                prompt: "Nhấp để tải lên hoặc kéo & thả",
+                newImage: "Tải ảnh mới",
+                heicError: "Lỗi chuyển đổi file HEIC. Vui lòng thử ảnh khác.",
+                loadError: "Không thể tải ảnh. File có thể bị lỗi hoặc không được hỗ trợ.",
+                confirmReset: "Bạn có muốn tải ảnh mới không? Mọi thay đổi sẽ bị mất.",
+            },
+            tabs: {
+                resize: "Đổi kích thước",
+                crop: "Cắt ảnh",
+                rotate: "Xoay",
+                censor: "Làm mờ",
+                export: "Xuất ảnh"
+            },
+            resize: {
+                title: "Đổi kích thước ảnh",
+                width: "Rộng:",
+                height: "Cao:",
+                keepRatio: "Giữ tỷ lệ",
+                invalidSize: "Kích thước không hợp lệ.",
+            },
+            crop: {
+                title: "Cắt ảnh",
+                instructions: "Kéo các góc/cạnh để đổi kích thước hoặc kéo từ giữa để di chuyển khung cắt.",
+                ratio: "Tỷ lệ:",
+                ratioFree: "Tự do",
+                ratioSquare: "Vuông",
+                apply: "Áp dụng cắt",
+            },
+            rotate: {
+                title: "Xoay ảnh",
+                instructions: "Sử dụng thanh trượt để tinh chỉnh góc xoay hoặc các nút để xoay nhanh.",
+                angle: "Góc xoay (tinh chỉnh):",
+                apply: "Áp dụng xoay",
+                reset: "Reset góc xoay",
+                left90: "Xoay Trái 90°",
+                right90: "Xoay Phải 90°",
+            },
+            censor: {
+                title: "Che thông tin (Pixelate)",
+                instructions: "Nhấp và kéo trên ảnh để chọn vùng cần làm mờ.",
+                pixelSize: "Kích thước pixel:",
+                apply: "Áp dụng làm mờ",
+                note: "Lưu ý: Hành động này sẽ áp dụng hiệu ứng trực tiếp lên ảnh.",
+            },
+            export: {
+                title: "Xuất ảnh",
+                format: "Định dạng:",
+                quality: "Chất lượng:",
+                estimatedSize: "Kích thước ước tính:",
+                download: "Tải ảnh"
+            },
+            desc: {
+                title: "Giới thiệu Trình Chỉnh Sửa Ảnh Online Miễn Phí",
+                p1: "Trình chỉnh sửa ảnh của chúng tôi cung cấp các công cụ thiết yếu để bạn có thể xử lý hình ảnh một cách nhanh chóng ngay trên trình duyệt mà không cần cài đặt phần mềm. Đây là giải pháp hoàn hảo để thực hiện các thao tác <strong>chỉnh sửa ảnh cơ bản</strong> một cách hiệu quả.",
+                feature1: "<strong>Thay đổi kích thước ảnh:</strong> Dễ dàng điều chỉnh chiều rộng và chiều cao của ảnh theo pixel, có hoặc không giữ tỷ lệ khung hình gốc.",
+                feature2: "<strong>Cắt ảnh online:</strong> Công cụ <strong>cắt ảnh</strong> linh hoạt với các tỷ lệ đặt trước (vuông, 16:9, 4:3) hoặc cắt tự do để lấy đúng khung hình bạn muốn.",
+                feature3: "<strong>Xoay và lật ảnh:</strong> Xoay ảnh theo góc tùy chỉnh hoặc xoay nhanh 90 độ, giúp điều chỉnh hướng ảnh một cách chính xác.",
+                feature4: "<strong>Làm mờ / Che thông tin (Pixelate):</strong> Bảo mật thông tin nhạy cảm như khuôn mặt, biển số xe, hoặc văn bản bằng cách <strong>làm mờ vùng ảnh</strong> bạn chọn.",
+                feature5: "<strong>Làm giảm dung lượng ảnh:</strong> Giảm dung lương ảnh, xuất ảnh JPEG với dung lượng thấp hơn theo ý muốn.",
+                feature6: "<strong>Xuất ảnh chất lượng cao:</strong> Lưu tác phẩm của bạn dưới các định dạng phổ biến như PNG, JPEG, hoặc WebP với tùy chọn điều chỉnh chất lượng.",
+                p2: "Với giao diện trực quan và các tính năng mạnh mẽ, công cụ chỉnh sửa ảnh miễn phí này là người bạn đồng hành lý tưởng cho mọi nhu cầu xử lý ảnh hàng ngày.",
+            }
+        },
+        otp: {
+            resendMessage: "Gửi lại mã sau {{timer}}s",
+            resendLink: "Gửi lại mã OTP"
+        }
+    }
+};
+
+function getTranslation(key, replacements = {}) {
+    let text = key.split('.').reduce((obj, i) => obj ? obj[i] : null, translations[currentLang]);
+    if (text === null || text === undefined) {
+        // Fallback to Vietnamese if key not found in current lang
+        text = key.split('.').reduce((obj, i) => obj ? obj[i] : null, translations['vi']);
+    }
+    if (text === null || text === undefined) {
+        return key; // Return the key itself if not found anywhere
+    }
+
+    // Handle replacements for dynamic values like {{variable}}
+    for (const placeholder in replacements) {
+        text = text.replace(`{{${placeholder}}}`, replacements[placeholder]);
+    }
+    
+    return text;
+}
+
+function setLanguage(lang) {
+    if (!translations[lang]) {
+        console.warn(`Language '${lang}' not found. Defaulting to 'vi'.`);
+        lang = 'vi';
+    }
+    currentLang = lang;
+    localStorage.setItem('bhyt_language', lang);
+    document.documentElement.lang = lang;
+
+    // Update the language switcher display
+    const langDisplay = document.getElementById('current-lang-display');
+    if(langDisplay) {
+        langDisplay.textContent = lang.toUpperCase();
+    }
+
+    // Update static text using data attributes
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.dataset.i18n;
+        const translation = getTranslation(key);
+        if (translation) {
+            el.innerHTML = translation;
+        }
+    });
+
+    // Update placeholders
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.dataset.i18nPlaceholder;
+        const translation = getTranslation(key);
+        if (translation) {
+            el.placeholder = translation;
+        }
+    });
+
+    // Update titles
+     document.querySelectorAll('[data-i18n-title]').forEach(el => {
+        const key = el.dataset.i18nTitle;
+        const translation = getTranslation(key);
+        if (translation) {
+            el.title = translation;
+        }
+    });
+}
+
+function initLanguage() {
+    const savedLang = localStorage.getItem('bhyt_language');
+    let browserLang = navigator.language.split('-')[0];
+    if (!translations[browserLang]) {
+        browserLang = 'vi'; // Fallback to Vietnamese
+    }
+    const lang = savedLang || browserLang;
+    setLanguage(lang);
+}
+
+// --- End of I18n ---
 
 function showAuthForm(formId) {
     const modalTitle = document.getElementById('authModalLabel');
@@ -24,11 +578,11 @@ function showAuthForm(formId) {
     });
     document.getElementById(formId).classList.remove('hidden');
 
-    if (formId === 'loginForm') modalTitle.textContent = 'Đăng nhập';
-    else if (formId === 'registerForm') modalTitle.textContent = 'Đăng ký';
-    else if (formId === 'forgotForm') modalTitle.textContent = 'Quên mật khẩu';
-    else if (formId === 'resetForm') modalTitle.textContent = 'Đặt lại mật khẩu';
-    else if (formId === 'deviceOtpForm') modalTitle.textContent = 'Xác thực thiết bị';
+    if (formId === 'loginForm') modalTitle.textContent = getTranslation('auth.loginTitle');
+    else if (formId === 'registerForm') modalTitle.textContent = getTranslation('auth.registerTitle');
+    else if (formId === 'forgotForm') modalTitle.textContent = getTranslation('auth.forgotPasswordTitle');
+    else if (formId === 'resetForm') modalTitle.textContent = getTranslation('auth.resetPasswordTitle');
+    else if (formId === 'deviceOtpForm') modalTitle.textContent = getTranslation('auth.deviceVerificationTitle');
 }
 
 async function handleLogin() {
@@ -42,7 +596,7 @@ async function handleLogin() {
   }
 
   if (!email || !password) {
-    loginMessage.innerText = 'Vui lòng nhập email và mật khẩu.';
+    loginMessage.innerText = getTranslation('auth.messages.fillFields');
     return;
   }
   tempLoginCredentials = { email, password };
@@ -66,7 +620,7 @@ async function handleLogin() {
     }
   } catch (error) {
     console.error("Login error:", error);
-    loginMessage.innerText = 'Lỗi kết nối. Vui lòng thử lại.';
+    loginMessage.innerText = getTranslation('auth.messages.loginError');
   }
 }
 
@@ -78,10 +632,10 @@ async function handleRegister() {
     const registerMessage = document.getElementById('registerMessage');
     registerMessage.innerText = '';
 
-    if (!email || !fullName || !cccd || !password) { registerMessage.innerText = 'Vui lòng điền đầy đủ thông tin.'; return; }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { registerMessage.innerText = 'Định dạng email không hợp lệ.'; return; }
-    if (!/^\d{12}$/.test(cccd)) { registerMessage.innerText = 'Số CCCD phải là 12 ký tự số.'; return; }
-    if (!/^(?=.*[A-Z])(?=.*\d).{8,}$/.test(password)) { registerMessage.innerText = 'Mật khẩu phải có ít nhất 8 ký tự, bao gồm ít nhất 1 chữ hoa và 1 chữ số.'; return; }
+    if (!email || !fullName || !cccd || !password) { registerMessage.innerText = getTranslation('auth.messages.fillAllFields'); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { registerMessage.innerText = getTranslation('auth.messages.invalidEmail'); return; }
+    if (!/^\d{12}$/.test(cccd)) { registerMessage.innerText = getTranslation('auth.messages.invalidCccd'); return; }
+    if (!/^(?=.*[A-Z])(?=.*\d).{8,}$/.test(password)) { registerMessage.innerText = getTranslation('auth.messages.invalidPassword'); return; }
 
     const body = `action=signup&email=${encodeURIComponent(email)}&fullName=${encodeURIComponent(fullName)}&cccd=${encodeURIComponent(cccd)}&password=${encodeURIComponent(password)}`;
     try {
@@ -95,7 +649,7 @@ async function handleRegister() {
         }
     } catch (error) {
         console.error("Registration error:", error);
-        registerMessage.innerText = 'Lỗi kết nối. Vui lòng thử lại.';
+        registerMessage.innerText = getTranslation('auth.messages.registrationError');
     }
 }
 
@@ -107,11 +661,11 @@ function startOtpCountdown(duration = 60) {
 
     const updateTimer = () => {
         if (timer > 0) {
-            container.innerHTML = `<span>Gửi lại mã sau ${timer}s</span>`;
+            container.innerHTML = `<span>${getTranslation('otp.resendMessage', {timer: timer})}</span>`;
             timer--;
         } else {
             clearInterval(otpTimerInterval);
-            container.innerHTML = `<a href="#" onclick="event.preventDefault(); handleForgot(true);">Gửi lại mã OTP</a>`;
+            container.innerHTML = `<a href="#" onclick="event.preventDefault(); handleForgot(true);">${getTranslation('otp.resendLink')}</a>`;
         }
     };
 
@@ -130,7 +684,7 @@ async function handleForgot(isResend = false) {
     const email = isResend ? currentEmail : emailInput.value.trim();
 
     if (!email) {
-        messageContainer.innerText = 'Vui lòng nhập email.';
+        messageContainer.innerText = getTranslation('auth.messages.enterEmail');
         messageContainer.className = 'mt-3 text-danger';
         return;
     }
@@ -140,9 +694,9 @@ async function handleForgot(isResend = false) {
     }
 
     if (isResend) {
-        document.getElementById('resendOtpContainer').innerHTML = `<span>Đang gửi...</span>`;
+        document.getElementById('resendOtpContainer').innerHTML = `<span>${getTranslation('auth.messages.sending')}</span>`;
     } else {
-        messageContainer.innerText = 'Đang gửi...';
+        messageContainer.innerText = getTranslation('auth.messages.sending');
         messageContainer.className = 'mt-3 text-muted';
     }
 
@@ -168,15 +722,15 @@ async function handleForgot(isResend = false) {
             messageContainer.innerText = data.error;
             // If it was a resend attempt, restore the resend link
             if (isResend) {
-                document.getElementById('resendOtpContainer').innerHTML = `<a href="#" onclick="event.preventDefault(); handleForgot(true);">Gửi lại mã OTP</a>`;
+                document.getElementById('resendOtpContainer').innerHTML = `<a href="#" onclick="event.preventDefault(); handleForgot(true);">${getTranslation('otp.resendLink')}</a>`;
             }
         }
     } catch (error) {
         console.error("Forgot password error:", error);
-        messageContainer.innerText = 'Lỗi kết nối. Vui lòng thử lại.';
+        messageContainer.innerText = getTranslation('auth.messages.forgotPasswordError');
         messageContainer.className = 'mt-3 text-danger';
         if (isResend) {
-             document.getElementById('resendOtpContainer').innerHTML = `<a href="#" onclick="event.preventDefault(); handleForgot(true);">Gửi lại mã OTP</a>`;
+             document.getElementById('resendOtpContainer').innerHTML = `<a href="#" onclick="event.preventDefault(); handleForgot(true);">${getTranslation('otp.resendLink')}</a>`;
         }
     }
 }
@@ -187,8 +741,8 @@ async function handleResetPassword() {
     const newPassword = document.getElementById('newPassword').value.trim();
     const resetMessage = document.getElementById('resetMessage');
     resetMessage.innerText = '';
-    if (!otp || !newPassword) { resetMessage.innerText = 'Vui lòng nhập OTP và mật khẩu mới.'; return; }
-    if (!/^(?=.*[A-Z])(?=.*\d).{8,}$/.test(newPassword)) { resetMessage.innerText = 'Mật khẩu mới phải có ít nhất 1 chữ hoa và 1 chữ số.'; return; }
+    if (!otp || !newPassword) { resetMessage.innerText = getTranslation('auth.messages.enterOtpAndPass'); return; }
+    if (!/^(?=.*[A-Z])(?=.*\d).{8,}$/.test(newPassword)) { resetMessage.innerText = getTranslation('auth.messages.invalidNewPassword'); return; }
     const body = `action=verifyOtpAndResetPassword&email=${encodeURIComponent(currentEmail)}&otp=${encodeURIComponent(otp)}&newPassword=${encodeURIComponent(newPassword)}`;
     try {
         const res = await fetch(CONFIG.API_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body });
@@ -201,7 +755,7 @@ async function handleResetPassword() {
         }
     } catch (error) {
         console.error("Reset password error:", error);
-        resetMessage.innerText = 'Lỗi kết nối. Vui lòng thử lại.';
+        resetMessage.innerText = getTranslation('auth.messages.resetPasswordError');
     }
 }
 
@@ -209,8 +763,8 @@ async function handleDeviceVerification() {
     const otp = document.getElementById('deviceOtpCode').value.trim();
     const deviceOtpMessage = document.getElementById('deviceOtpMessage');
     deviceOtpMessage.innerText = '';
-    if (!otp) { deviceOtpMessage.innerText = 'Vui lòng nhập mã OTP.'; return; }
-    if (!tempLoginCredentials.email) { deviceOtpMessage.innerText = 'Phiên làm việc đã hết hạn. Vui lòng quay lại và đăng nhập.'; return; }
+    if (!otp) { deviceOtpMessage.innerText = getTranslation('auth.messages.enterOtp'); return; }
+    if (!tempLoginCredentials.email) { deviceOtpMessage.innerText = getTranslation('auth.messages.sessionExpired'); return; }
     const deviceName = navigator.userAgent;
     const body = `action=verifyDeviceAndLogin&email=${encodeURIComponent(tempLoginCredentials.email)}&password=${encodeURIComponent(tempLoginCredentials.password)}&otp=${encodeURIComponent(otp)}&deviceId=${encodeURIComponent(deviceId)}&deviceName=${encodeURIComponent(deviceName)}`;
     try {
@@ -226,7 +780,7 @@ async function handleDeviceVerification() {
         }
     } catch (error) {
         console.error("Device verification error:", error);
-        deviceOtpMessage.innerText = 'Lỗi kết nối. Vui lòng thử lại.';
+        deviceOtpMessage.innerText = getTranslation('auth.messages.loginError');
     }
 }
 
@@ -239,26 +793,26 @@ async function handleChangePassword() {
     messageEl.className = 'mt-3';
 
     if (!currentPassword || !newPassword || !confirmPassword) {
-        messageEl.textContent = 'Vui lòng điền đầy đủ các trường.';
+        messageEl.textContent = getTranslation('user.messages.fillAllFields');
         messageEl.classList.add('text-danger');
         return;
     }
 
     if (newPassword !== confirmPassword) {
-        messageEl.textContent = 'Mật khẩu mới không khớp.';
+        messageEl.textContent = getTranslation('user.messages.passwordsMismatch');
         messageEl.classList.add('text-danger');
         return;
     }
 
     if (!/^(?=.*[A-Z])(?=.*\d).{8,}$/.test(newPassword)) {
-        messageEl.textContent = 'Mật khẩu mới phải có ít nhất 1 chữ hoa và 1 chữ số.';
+        messageEl.textContent = getTranslation('auth.messages.invalidPassword');
         messageEl.classList.add('text-danger');
         return;
     }
 
     const user = JSON.parse(localStorage.getItem('bhyt_user') || '{}');
     if (!user.sessionId) {
-        alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+        alert(getTranslation('bhyt.messages.sessionExpired'));
         logout();
         return;
     }
@@ -286,7 +840,7 @@ async function handleChangePassword() {
         }
     } catch (error) {
         console.error('Change password error:', error);
-        messageEl.textContent = 'Lỗi kết nối. Vui lòng thử lại.';
+        messageEl.textContent = getTranslation('user.messages.changePasswordError');
         messageEl.classList.add('text-danger');
     }
 }
@@ -315,7 +869,7 @@ function exportToExcel() {
   const visibleRows = Array.from(tableBody.rows).filter(row => row.style.display !== 'none');
 
   if (visibleRows.length === 0) {
-    alert('Không có dữ liệu để xuất. Vui lòng tải và lọc dữ liệu trước.');
+    alert(getTranslation('bhyt.noDataToExport'));
     return;
   }
 
@@ -367,7 +921,7 @@ let bhytDataLoaded = false;
 async function loadNotification() {
   notificationContentElement.innerHTML = '';
   notificationLoadingElement.style.display = 'block';
-  notificationLoadingElement.innerHTML = 'Đang tải thông báo...';
+  notificationLoadingElement.innerHTML = getTranslation('notifications.loading');
   const formBody = `action=fetchNotificationContent`;
   try {
     const res = await fetch(CONFIG.API_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: formBody });
@@ -380,15 +934,15 @@ async function loadNotification() {
       iframe.style.width = '100%';
       iframe.style.height = '75vh';
       iframe.style.border = 'none';
-      iframe.title = 'Thông báo từ quản trị viên';
+      iframe.title = getTranslation('notifications.iframeTitle');
       iframe.onload = () => { notificationLoadingElement.style.display = 'none'; };
       notificationContentElement.appendChild(iframe);
     } else {
-      notificationLoadingElement.innerHTML = `<p class="text-danger">${data.error || 'Lỗi không xác định.'}</p>`;
+      notificationLoadingElement.innerHTML = `<p class="text-danger">${data.error || getTranslation('notifications.configError')}</p>`;
     }
   } catch (err) {
     console.error('Error fetching notification content:', err);
-    notificationLoadingElement.innerHTML = `<p class="text-danger">Lỗi hệ thống khi tải thông báo.</p>`;
+    notificationLoadingElement.innerHTML = `<p class="text-danger">${getTranslation('notifications.fetchError')}</p>`;
   }
 }
 
@@ -499,7 +1053,7 @@ function applyFilters() {
 // --- End of Filtering Logic ---
 
 async function loadData(type) {
-  document.getElementById('loading').innerText = 'Đang tải dữ liệu...';
+  document.getElementById('loading').innerText = getTranslation('bhyt.loading');
   document.getElementById('dataBody').innerHTML = '';
   const user = JSON.parse(localStorage.getItem('bhyt_user') || '{}');
   if (!user.sessionId) { logout(); return; }
@@ -527,19 +1081,19 @@ async function loadData(type) {
         <tr>
           <td>${row.hanTheDen||''}</td><td>${row.hoTen||''}</td><td>${row.gioiTinh||''}</td><td>${row.ngaySinh||''}</td><td>${row.soDienThoai||''}</td><td>${row.diaChiLh||''}</td><td>${row.maPb||''}</td><td>${row.soCmnd||''}</td><td>${row.maBv||''}</td><td>${row.soKcb||''}</td><td>${row.maDvi||''}</td>
         </tr>`).join('');
-      document.getElementById('dataBody').innerHTML = rows || '<tr><td colspan="11">Không có dữ liệu</td></tr>';
+      document.getElementById('dataBody').innerHTML = rows || `<tr><td colspan="11">${getTranslation('bhyt.noData')}</td></tr>`;
       // Apply filters to the newly loaded data
       applyFilters();
     } else {
        if (data.error && (data.error.includes('hết hạn') || data.error.includes('không hợp lệ'))) {
-          alert(data.error + " Vui lòng đăng nhập lại."); logout();
+          alert(data.error + ` ${getTranslation('bhyt.messages.sessionExpired')}`); logout();
        } else {
           document.getElementById('dataBody').innerHTML = `<tr><td colspan="11">${data.error || 'Lỗi không xác định.'}</td></tr>`;
        }
     }
   } catch (err) {
     console.error('Error fetching BHYT data:', err);
-    document.getElementById('dataBody').innerHTML = `<tr><td colspan="11">Lỗi hệ thống khi tải dữ liệu.</td></tr>`;
+    document.getElementById('dataBody').innerHTML = `<tr><td colspan="11">${getTranslation('bhyt.messages.fetchError')}</td></tr>`;
   }
   document.getElementById('loading').innerText = '';
 }
@@ -550,14 +1104,18 @@ function initApp() {
 
     if (user && user.sessionId) {
         // Logged In State
+        const greeting = getTranslation('user.greeting', { fullName: user.fullName });
+        const changePasswordText = getTranslation('user.changePassword');
+        const logoutText = getTranslation('user.logout');
+        
         userActions.innerHTML = `<div class="dropdown">
-                                  <button class="btn btn-outline-secondary dropdown-toggle btn-sm" type="button" id="userMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
-                                    Xin chào, ${user.fullName}
+                                  <button class="btn btn-outline-secondary dropdown-toggle btn-sm" type="button" id="userMenuButton" data-bs-toggle="dropdown" aria-expanded="false" title="${greeting}">
+                                    ${greeting}
                                   </button>
                                   <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenuButton">
-                                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#changePasswordModal">Đổi mật khẩu</a></li>
+                                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#changePasswordModal">${changePasswordText}</a></li>
                                     <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="#" onclick="logout()">Đăng xuất</a></li>
+                                    <li><a class="dropdown-item" href="#" onclick="logout()">${logoutText}</a></li>
                                   </ul>
                                 </div>`;
 
@@ -580,7 +1138,7 @@ function initApp() {
 
     } else {
         // Logged Out State
-        userActions.innerHTML = `<button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#authModal">Đăng nhập / Đăng ký</button>`;
+        userActions.innerHTML = `<button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#authModal">${getTranslation('user.loginRegister')}</button>`;
 
         document.getElementById('home-tab-li').style.display = 'none';
         document.getElementById('bhyt-tab-li').style.display = 'none';
@@ -669,11 +1227,11 @@ function initQRCodeTool() {
                 });
             } catch (error) {
                 console.error("QR Code generation error:", error);
-                statusMessage.textContent = 'Không thể tạo mã QR. Dữ liệu có thể quá dài.';
+                statusMessage.textContent = getTranslation('qrcode.messages.generationError');
             }
         } else {
              if (activeQrTab !== 'qr-read-pane') {
-                statusMessage.textContent = 'Vui lòng nhập dữ liệu để tạo mã QR.';
+                statusMessage.textContent = getTranslation('qrcode.messages.enterData');
             }
         }
     }
@@ -685,7 +1243,7 @@ function initQRCodeTool() {
     // --- QR Code Reading ---
     function handleQrFile(file) {
         if (!file || !file.type.startsWith('image/')) {
-            alert('Vui lòng chọn một tệp ảnh.');
+            alert(getTranslation('qrcode.read.filePrompt'));
             return;
         }
 
@@ -709,7 +1267,7 @@ function initQRCodeTool() {
                     resultText.textContent = code.data;
                     resultContainer.style.display = 'block';
                 } else {
-                    alert('Không tìm thấy mã QR trong ảnh.');
+                    alert(getTranslation('qrcode.read.notFound'));
                 }
             };
             img.src = e.target.result;
@@ -746,9 +1304,15 @@ function initQRCodeTool() {
 
 
 document.addEventListener('DOMContentLoaded', () => {
+  initLanguage();
+
   // Init Auth, BHYT, Notification, and QR Code tools
   authModalInstance = new bootstrap.Modal(document.getElementById('authModal'));
   changePasswordModalInstance = new bootstrap.Modal(document.getElementById('changePasswordModal'));
+
+  // Set up language switcher events
+  document.getElementById('lang-vi').addEventListener('click', (e) => { e.preventDefault(); setLanguage('vi'); window.location.reload(); });
+  document.getElementById('lang-en').addEventListener('click', (e) => { e.preventDefault(); setLanguage('en'); window.location.reload(); });
 
   // Login on Enter key press in the password field
   document.getElementById('loginPassword').addEventListener('keyup', function(event) {
@@ -787,7 +1351,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
 
-    const tabBtns = document.querySelectorAll('.tabs .tab-btn');
+    const tabBtns = document.querySelectorAll('.hinhanh-app-wrapper .tabs .tab-btn');
     const tabContents = document.querySelectorAll('.controls-main .tab-content');
 
     // --- Các điều khiển ---
@@ -905,13 +1469,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     loadImage(url);
                 })
                 .catch(err => {
-                    alert("Lỗi chuyển đổi file HEIC. Vui lòng thử ảnh khác.");
+                    alert(getTranslation('image.uploader.heicError'));
                     console.error(err);
                 });
         } else if (file.type.startsWith('image/')) {
             loadImage(URL.createObjectURL(file));
         } else {
-            alert('Vui lòng chọn một file ảnh.');
+            alert(getTranslation('image.uploader.loadError'));
         }
     }
 
@@ -930,13 +1494,13 @@ document.addEventListener('DOMContentLoaded', () => {
             switchTab('resize');
         };
         img.onerror = () => {
-            alert('Không thể tải ảnh. File có thể bị lỗi hoặc không được hỗ trợ.');
+            alert(getTranslation('image.uploader.loadError'));
         };
         img.src = src;
     }
 
     function resetEditor() {
-        if (!confirm("Bạn có muốn tải ảnh mới không? Mọi thay đổi sẽ bị mất.")) return;
+        if (!confirm(getTranslation('image.uploader.confirmReset'))) return;
 
         uploader.classList.remove('hidden');
         editor.classList.add('hidden');
@@ -1127,7 +1691,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const height = parseInt(heightInput.value, 10);
 
         if (!width || !height || width <= 0 || height <= 0) {
-            alert('Kích thước không hợp lệ.');
+            alert(getTranslation('image.resize.invalidSize'));
             return;
         }
 
