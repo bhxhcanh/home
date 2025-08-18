@@ -1,4 +1,4 @@
-// script.js
+// assets/script.js
 
 const CONFIG = {
   API_URL: 'https://script.google.com/macros/s/AKfycbyNZD5MEluEvV0yNcc-U8aS77ouR62QlmXqSWZKEZXK9OM8rAQeaT8aMVK-7q7q3ZzC/exec'
@@ -331,17 +331,18 @@ document.addEventListener('DOMContentLoaded', () => {
   changePasswordModalInstance = new bootstrap.Modal(document.getElementById('changePasswordModal'));
 
   // Login on Enter key press in the password field
-  document.getElementById('loginPassword').addEventListener('keyup', function(event) {
-      if (event.key === 'Enter') {
-          event.preventDefault(); // Prevent any default action
-          handleLogin();
-      }
-  });
-
-  // Initialize main app logic and tool-specific logic
+  const loginPasswordField = document.getElementById('loginPassword');
+  if (loginPasswordField) {
+    loginPasswordField.addEventListener('keyup', function(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault(); // Prevent any default action
+            handleLogin();
+        }
+    });
+  }
+  
+  // Initialize main app logic
   initApp();
-  initQRCodeTool();
-  initPhotoEditor();
 
   // Auto-hide mobile navbar on menu item click
   const navLinks = document.querySelectorAll('#navbarContent .nav-link');
