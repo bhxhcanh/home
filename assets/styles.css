@@ -1,0 +1,54 @@
+/* assets/style.css */
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f8f9fa;
+}
+
+.hidden {
+  display: none !important;
+}
+
+h3 {
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.form-label {
+  font-weight: 500;
+}
+
+button.btn {
+  min-width: 100px;
+}
+
+@media (max-width: 768px) {
+  h3 {
+    font-size: 1.2rem;
+  }
+
+  .btn {
+    margin-bottom: 0.5rem;
+  }
+
+  .form-select,
+  .form-control {
+    font-size: 0.95rem;
+  }
+
+  .container-fluid, .container {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+}
+
+/* Tool Description for SEO */
+.tool-description {
+  line-height: 1.6;
+}
+.tool-description ul {
+  padding-left: 1.5rem;
+}
+.tool-description li {
+  margin-bottom: 0.5rem;
+}
