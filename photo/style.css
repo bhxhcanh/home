@@ -1,0 +1,436 @@
+/* photo/style.css */
+
+.hidden {
+    display: none !important;
+}
+
+/* --- Main App Wrapper --- */
+.hinhanh-app-wrapper {
+  background-color: #f0f2f5;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+  height: 85vh; /* Give the app a defined height */
+  display: flex; /* Use flexbox to manage inner content height */
+  flex-direction: column;
+}
+
+.app-container {
+  width: 100%;
+  height: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex-grow: 1; /* Allow main content to fill available space */
+  display: flex;
+  height: 100%;
+}
+
+/* --- Uploader Section --- */
+.uploader-section {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  background-color: #fafafa;
+}
+
+.upload-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #555;
+  padding: 3rem;
+  text-align: center;
+}
+
+.upload-label svg {
+  color: #888;
+  margin-bottom: 1rem;
+}
+
+/* --- Editor Section --- */
+.editor-section {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  gap: 1.5rem;
+}
+
+.canvas-container {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #e9ecef;
+  border-radius: 8px;
+  overflow: hidden; /* Hide anything that might go outside the canvas area */
+  position: relative; /* Needed for any absolute positioning inside */
+  padding: 1rem;
+}
+
+canvas#canvas {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+}
+
+/* --- Controls Panel --- */
+.controls-panel {
+  width: 350px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.controls-main {
+  flex-grow: 1;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.controls-footer {
+  padding: 1rem;
+  border-top: 1px solid #e9ecef;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f8f9fa;
+}
+
+/* --- Tabs --- */
+.tabs {
+  display: flex;
+  border-bottom: 1px solid #dee2e6;
+  margin-bottom: 1rem;
+}
+
+.tab-btn {
+  padding: 0.75rem 0.5rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  flex-grow: 1;
+  text-align: center;
+  color: #6c757d;
+  font-weight: 500;
+  font-size: 0.85rem;
+  position: relative;
+  transition: color 0.2s ease;
+}
+
+.tab-btn:hover {
+  color: #0d6efd;
+}
+
+.tab-btn.active {
+  color: #0d6efd;
+  font-weight: 600;
+}
+
+.tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: #0d6efd;
+}
+
+/* --- Tab Content (FIXED SELECTOR) --- */
+.controls-main > .tab-content {
+  display: none; /* Hide inactive tabs by default */
+}
+
+.controls-main > .tab-content.active {
+  display: block; /* Show active tab */
+}
+
+/* --- General Control Styling --- */
+.tab-content h3 {
+  font-size: 1.2rem;
+  color: #212529;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.instructions {
+  font-size: 0.875rem;
+  color: #6c757d;
+  margin-bottom: 1rem;
+  background-color: #f8f9fa;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+}
+
+.small-text {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.control-group {
+  margin-bottom: 1rem;
+}
+
+.control-group label, .control-group-row label {
+  display: block;
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: #495057;
+  margin-bottom: 0.5rem;
+}
+
+.control-group input[type="number"],
+.control-group select {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  background-color: #fff;
+  transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+}
+
+.control-group input[type="number"]:focus,
+.control-group select:focus {
+  border-color: #86b7fe;
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25);
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
+}
+.checkbox-group input[type="checkbox"] {
+  margin-right: 0.5rem;
+}
+.checkbox-group label {
+  margin-bottom: 0;
+  font-weight: normal;
+}
+
+.control-group-row {
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.action-btn, .secondary-btn, .reset-btn {
+  width: 100%;
+  padding: 0.6rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s, box-shadow 0.2s;
+}
+
+.action-btn {
+  background-color: #0d6efd;
+  color: white;
+}
+.action-btn:hover {
+  background-color: #0b5ed7;
+}
+.action-btn:disabled {
+  background-color: #a0a0a0;
+  cursor: not-allowed;
+}
+
+.action-btn.secondary-style {
+  background-color: #6c757d;
+  color: white;
+}
+.action-btn.secondary-style:hover {
+  background-color: #5c636a;
+}
+
+.secondary-btn, .reset-btn {
+  background-color: #f8f9fa;
+  color: #343a40;
+  border: 1px solid #dee2e6;
+}
+.secondary-btn:hover, .reset-btn:hover {
+  background-color: #e9ecef;
+}
+.secondary-btn:disabled {
+    background-color: #f8f9fa;
+    color: #adb5bd;
+    cursor: not-allowed;
+}
+
+.history-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+.history-buttons .secondary-btn {
+    width: auto;
+    flex-grow: 1;
+}
+
+.reset-btn {
+    background-color: #ffe0e6;
+    color: #dc3545;
+    border: 1px solid #f5c2c7;
+}
+.reset-btn:hover {
+    background-color: #f8d7da;
+}
+
+/* --- Specific Controls --- */
+/* CROP */
+.aspect-ratio-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.aspect-btn {
+  flex: 1 1 auto;
+  padding: 0.4rem;
+  font-size: 0.8rem;
+  background-color: #e9ecef;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.aspect-btn.active {
+  background-color: #0d6efd;
+  color: white;
+  border-color: #0d6efd;
+}
+.crop-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+#apply-crop-btn {
+    margin-top: 1rem;
+}
+
+/* ROTATE & CENSOR */
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 8px;
+  background: #dee2e6;
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
+  border-radius: 5px;
+}
+input[type="range"]:hover {
+  opacity: 1;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background: #0d6efd;
+  cursor: pointer;
+  border-radius: 50%;
+  border: 2px solid white;
+}
+input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: #0d6efd;
+  cursor: pointer;
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+
+/* EXPORT */
+#quality-control {
+  /* Initially hidden by JS, but good to have a rule */
+  display: none;
+}
+.file-size-info {
+  font-size: 0.9rem;
+  color: #6c757d;
+  text-align: center;
+  padding: 0.5rem;
+  background-color: #e9ecef;
+  border-radius: 4px;
+}
+
+
+/* =================================== */
+/* === MOBILE RESPONSIVE STYLES === */
+/* =================================== */
+
+@media (max-width: 991.98px) {
+  /* --- Responsive Image Editor (Tablet and below) --- */
+  .hinhanh-app-wrapper {
+    height: auto; /* Allow container to grow */
+    min-height: 85vh;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .editor-section {
+    flex-direction: column;
+    height: auto;
+    flex-grow: 1;
+    min-height: 0;
+  }
+
+  .canvas-container {
+    height: 45vh; /* Allocate fixed portion of viewport height */
+    min-height: 300px;
+    flex-shrink: 0;
+  }
+
+  .controls-panel {
+    width: 100%;
+    flex-shrink: 1;
+    flex-grow: 1; /* Take remaining space */
+    min-height: 0;
+    max-height: none; /* Let flexbox manage height */
+    box-shadow: none;
+    border-top: 1px solid #dee2e6;
+    margin-top: 1rem;
+    border-radius: 0 0 8px 8px;
+  }
+}
+
+
+@media (max-width: 767.98px) {
+  /* --- Scrollable Tabs (Mobile only) --- */
+  .hinhanh-app-wrapper .tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    /* Hide scrollbar visually for a cleaner look */
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  .hinhanh-app-wrapper .tabs::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, and Opera */
+  }
+
+  .hinhanh-app-wrapper .tabs .tab-btn {
+    flex-shrink: 0;
+  }
+}
