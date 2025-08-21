@@ -3,10 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Công cụ trực tuyến</title>
+  <title>Công cụ Mã QR - Công cụ trực tuyến</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="style.css">
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZS5G3PWFSD"></script>
 <!-- Google tag (gtag.js) -->
@@ -153,7 +154,7 @@
 
   <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
     <div class="container-fluid">
-      <a class="navbar-brand fw-bold" href="../">Công cụ trực tuyến</a>
+      <a class="navbar-brand fw-bold" href="../">Home</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -179,36 +180,126 @@
   </nav>
 
   <div class="container mt-4">
-    <div class="px-4 py-5 my-5 text-center">
-      <h1 class="display-5 fw-bold text-body-emphasis">Bộ công cụ trực tuyến</h1>
-      <div class="col-lg-6 mx-auto">
-        <p class="lead mb-4">Chào mừng bạn đến với bộ sưu tập các công cụ hữu ích, miễn phí và hoạt động ngay trên trình duyệt. Chọn một công cụ bên dưới để bắt đầu.</p>
-      </div>
-    </div>
+    <div class="qrcode-app-wrapper">
+        <div class="container">
+            <h1 class="display-6 fw-bold">Công cụ Mã QR</h1>
+            <p class="lead text-muted mb-4">Tạo mã QR cho văn bản, URL, WiFi, danh thiếp, hoặc đọc mã QR từ ảnh.</p>
 
-    <div class="row g-4">
-      <div class="col-md-6">
-        <div class="card h-100 shadow-sm">
-          <div class="card-body d-flex flex-column">
-            <h5 class="card-title"><i class="bi bi-qr-code-scan me-2"></i>Công cụ Mã QR</h5>
-            <p class="card-text flex-grow-1">Tạo và đọc mã QR cho văn bản, URL, WiFi, danh thiếp vCard một cách nhanh chóng và dễ dàng.</p>
-            <a href="qrcode/index.html" class="btn btn-primary mt-auto">Sử dụng ngay</a>
-          </div>
+            <!-- Tab Navigation -->
+            <ul class="nav nav-pills mb-3" id="qr-type-pills" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="qr-text-tab" data-bs-toggle="pill" data-bs-target="#qr-text-pane" type="button" role="tab" aria-controls="qr-text-pane" aria-selected="true">Văn bản</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="qr-url-tab" data-bs-toggle="pill" data-bs-target="#qr-url-pane" type="button" role="tab" aria-controls="qr-url-pane" aria-selected="false">URL</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="qr-wifi-tab" data-bs-toggle="pill" data-bs-target="#qr-wifi-pane" type="button" role="tab" aria-controls="qr-wifi-pane" aria-selected="false">WiFi</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="qr-vcard-tab" data-bs-toggle="pill" data-bs-target="#qr-vcard-pane" type="button" role="tab" aria-controls="qr-vcard-pane" aria-selected="false">vCard</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="qr-read-tab" data-bs-toggle="pill" data-bs-target="#qr-read-pane" type="button" role="tab" aria-controls="qr-read-pane" aria-selected="false">Đọc QR</button>
+                </li>
+            </ul>
+
+            <!-- Tab Content -->
+            <div class="tab-content" id="qr-pills-content">
+                <!-- Text Pane -->
+                <div class="tab-pane fade show active" id="qr-text-pane" role="tabpanel" aria-labelledby="qr-text-tab">
+                    <label for="qr-text-input" class="form-label">Nhập văn bản của bạn:</label>
+                    <textarea class="form-control" id="qr-text-input" rows="4" placeholder="Xin chào!"></textarea>
+                </div>
+
+                <!-- URL Pane -->
+                <div class="tab-pane fade" id="qr-url-pane" role="tabpanel" aria-labelledby="qr-url-tab">
+                    <label for="qr-url-input" class="form-label">Nhập URL trang web:</label>
+                    <input type="url" class="form-control" id="qr-url-input" placeholder="https://www.example.com">
+                </div>
+
+                <!-- WiFi Pane -->
+                <div class="tab-pane fade" id="qr-wifi-pane" role="tabpanel" aria-labelledby="qr-wifi-tab">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="qr-wifi-ssid" class="form-label">Tên mạng (SSID)</label>
+                            <input type="text" class="form-control" id="qr-wifi-ssid" placeholder="MyWiFiNetwork">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="qr-wifi-password" class="form-label">Mật khẩu</label>
+                            <input type="password" class="form-control" id="qr-wifi-password" placeholder="********">
+                        </div>
+                        <div class="col-12">
+                             <label for="qr-wifi-encryption" class="form-label">Loại mã hóa</label>
+                             <select id="qr-wifi-encryption" class="form-select">
+                                <option value="WPA" selected>WPA/WPA2</option>
+                                <option value="WEP">WEP</option>
+                                <option value="nopass">Không có</option>
+                             </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- vCard Pane -->
+                <div class="tab-pane fade" id="qr-vcard-pane" role="tabpanel" aria-labelledby="qr-vcard-tab">
+                     <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="qr-vcard-name" class="form-label">Họ và Tên</label>
+                            <input type="text" class="form-control" id="qr-vcard-name" placeholder="Nguyễn Văn A">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="qr-vcard-phone" class="form-label">Số điện thoại</label>
+                            <input type="tel" class="form-control" id="qr-vcard-phone" placeholder="0901234567">
+                        </div>
+                         <div class="col-md-6">
+                            <label for="qr-vcard-email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="qr-vcard-email" placeholder="email@example.com">
+                        </div>
+                         <div class="col-md-6">
+                            <label for="qr-vcard-org" class="form-label">Tổ chức</label>
+                            <input type="text" class="form-control" id="qr-vcard-org" placeholder="Tên công ty">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reader Pane -->
+                <div class="tab-pane fade" id="qr-read-pane" role="tabpanel" aria-labelledby="qr-read-tab">
+                    <div id="qr-reader-uploader">
+                      <label for="qr-upload-input" class="upload-label-qr">
+                        <div class="upload-label-internal">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                          <span>Nhấp để tải lên hoặc kéo &amp; thả ảnh QR</span>
+                        </div>
+                      </label>
+                      <input type="file" id="qr-upload-input" accept="image/*" class="hidden-input" />
+                    </div>
+                     <div id="qr-reader-result-container" style="display: none;">
+                        <h4>Nội dung mã QR:</h4>
+                        <div id="qr-reader-result-text"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Button and Result Display -->
+            <div class="text-center mt-4">
+                 <button class="btn btn-primary btn-lg" id="generate-btn">Tạo mã QR</button>
+            </div>
+            
+            <div id="status-message" class="text-danger text-center mt-2"></div>
+
+            <div id="qrcode-container">
+                <!-- QR code will be rendered here -->
+            </div>
         </div>
-      </div>
-      <div class="col-md-6">
-        <div class="card h-100 shadow-sm">
-          <div class="card-body d-flex flex-column">
-            <h5 class="card-title"><i class="bi bi-image me-2"></i>Trình Chỉnh sửa ảnh</h5>
-            <p class="card-text flex-grow-1">Thực hiện các thao tác chỉnh sửa ảnh cơ bản như cắt, xoay, thay đổi kích thước, và làm mờ thông tin nhạy cảm.</p>
-            <a href="photo/index.html" class="btn btn-primary mt-auto">Sử dụng ngay</a>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 
+  <!-- Libraries for QR Tool -->
+  <script src="https://cdn.jsdelivr.net/npm/qr-creator/dist/qr-creator.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="assets/script.js"></script>
+  <script src="../assets/script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
