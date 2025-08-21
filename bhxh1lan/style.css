@@ -1,0 +1,123 @@
+/* bhxh1lan/style.css */
+.period-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  border-radius: 0.375rem;
+  border: 1px solid #dee2e6;
+  margin-bottom: 1rem;
+}
+
+.period-row:last-child {
+  margin-bottom: 0;
+}
+
+.period-row .form-label {
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+}
+
+.date-range-group, .details-group, .category-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.period-row .form-select, .period-row .form-control {
+    min-width: 80px;
+}
+
+/* Styles for responsive date range layout */
+.date-range-wrapper {
+    display: flex;
+    /* Force to a single line on larger screens */
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.date-group {
+    display: flex;
+    gap: 0.25rem;
+    /* Allow the group to shrink and share space */
+    flex: 1;
+    min-width: 0;
+}
+
+/* Reduce width of month selector */
+.date-group .form-select[aria-label*="tháng"] {
+    flex: 0 0 70px;
+    width: 70px;
+    min-width: 70px; /* Override the general min-width */
+}
+
+/* Allow year selector to fill remaining space */
+.date-group .form-select[aria-label*="năm"] {
+    flex: 1 1 auto;
+    width: auto;
+}
+
+.date-separator {
+    color: #6c757d;
+    flex-shrink: 0; /* Prevent the "Đến" text from shrinking */
+}
+
+
+.delete-btn-wrapper {
+    margin-left: auto;
+    padding-left: 1rem;
+}
+
+.details-inputs-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.maternity-text {
+    padding: 0.375rem 0.75rem;
+    color: #6c757d;
+    background-color: #e9ecef;
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+}
+
+#calculate-btn .spinner-border {
+    margin-right: 0.5rem;
+}
+
+/* Responsive Styles */
+@media (max-width: 767.98px) {
+  .period-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .delete-btn-wrapper {
+    margin-left: 0;
+    padding-left: 0;
+    margin-top: 1rem;
+    align-self: flex-end;
+  }
+}
+
+/* Stack date inputs vertically on small mobile screens for better usability */
+@media (max-width: 480px) {
+    .date-range-wrapper {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.25rem;
+        /* Re-enable wrapping for very small screens, which is implicit with column direction */
+    }
+
+    .date-separator {
+        text-align: center;
+        padding: 0.25rem 0;
+    }
+}

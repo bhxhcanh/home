@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Công cụ tính BHXH 1 lần - Công cụ trực tuyến</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="style.css">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZS5G3PWFSD"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-HBQE75RM9F"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-ZS5G3PWFSD');
+</script>
+</head>
+<body>
+
+  <!-- Authentication Modal -->
+  <div class="modal fade" id="authModal" tabindex="-1" aria-labelledby="authModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="authModalLabel">Đăng nhập</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Login Form -->
+          <div id="loginForm">
+            <div class="mb-3">
+              <label for="loginEmail" class="form-label">Email</label>
+              <input type="email" class="form-control" id="loginEmail" autocomplete="email">
+            </div>
+            <div class="mb-3">
+              <label for="loginPassword" class="form-label">Mật khẩu</label>
+              <input type="password" class="form-control" id="loginPassword" autocomplete="current-password">
+            </div>
+            <button class="btn btn-primary w-100" onclick="handleLogin()">Đăng nhập</button>
+            <div class="d-flex justify-content-between mt-2">
+              <a href="#" class="btn btn-link" onclick="showAuthForm('forgotForm')">Quên mật khẩu?</a>
+              <a href="#" class="btn btn-link" onclick="showAuthForm('registerForm')">Đăng ký</a>
+            </div>
+            <div id="loginMessage" class="mt-3 text-danger"></div>
+          </div>
+
+          <!-- Register Form -->
+          <div id="registerForm" class="hidden">
+            <h5 class="mb-3">Đăng ký</h5>
+            <div class="mb-3">
+              <label for="regEmail" class="form-label">Email</label>
+              <input type="email" class="form-control" id="regEmail" autocomplete="email">
+            </div>
+            <div class="mb-3">
+              <label for="regPassword" class="form-label">Mật khẩu</label>
+              <input type="password" class="form-control" id="regPassword" autocomplete="new-password">
+            </div>
+            <div class="mb-3">
+              <label for="regPasswordConfirm" class="form-label">Xác nhận mật khẩu</label>
+              <input type="password" class="form-control" id="regPasswordConfirm" autocomplete="new-password">
+            </div>
+            <button class="btn btn-success w-100" onclick="handleRegistrationRequest()">Đăng ký</button>
+            <a href="#" class="btn btn-link d-block mt-2" onclick="showAuthForm('loginForm')">Quay lại đăng nhập</a>
+            <div id="registerMessage" class="mt-3 text-danger"></div>
+          </div>
+          
+          <!-- Register OTP Form -->
+          <div id="registerOtpForm" class="hidden">
+              <h5 class="mb-3">Xác thực đăng ký</h5>
+              <p class="text-muted small">Một mã OTP đã được gửi đến email <strong id="registerOtpEmailDisplay"></strong>. Vui lòng nhập mã đó để hoàn tất.</p>
+              <div class="mb-3">
+                  <label for="registerOtpCode" class="form-label">Mã OTP</label>
+                  <input type="text" class="form-control" id="registerOtpCode" inputmode="numeric" autocomplete="one-time-code">
+              </div>
+              <button class="btn btn-primary w-100" onclick="handleCompleteRegistration()">Xác thực &amp; Hoàn tất</button>
+              <a href="#" class="btn btn-link d-block mt-2" onclick="showAuthForm('registerForm')">Quay lại</a>
+              <div id="registerOtpMessage" class="mt-3"></div>
+          </div>
+
+          <!-- Forgot Password Form -->
+          <div id="forgotForm" class="hidden">
+              <h5 class="mb-3">Quên mật khẩu</h5>
+              <div class="mb-3">
+                  <label for="forgotEmail" class="form-label">Nhập email của bạn</label>
+                  <input type="email" class="form-control" id="forgotEmail" autocomplete="email">
+              </div>
+              <button class="btn btn-warning w-100" onclick="handleForgot()">Gửi OTP</button>
+              <a href="#" class="btn btn-link d-block mt-2" onclick="showAuthForm('loginForm')">Quay lại đăng nhập</a>
+              <div id="forgotMessage" class="mt-3"></div>
+          </div>
+
+          <!-- Reset Password Form -->
+          <div id="resetForm" class="hidden">
+              <h5 class="mb-3">Đặt lại mật khẩu</h5>
+              <p class="text-muted small">Một mã OTP đã được gửi đến email <strong id="resetEmailDisplay"></strong>. Vui lòng nhập mã đó bên dưới.</p>
+              <div class="mb-3">
+                  <label for="otpCode" class="form-label">Mã OTP</label>
+                  <input type="text" class="form-control" id="otpCode" inputmode="numeric" autocomplete="one-time-code">
+              </div>
+              <div class="mb-3">
+                  <label for="newPassword" class="form-label">Mật khẩu mới</label>
+                  <input type="password" class="form-control" id="newPassword" autocomplete="new-password">
+              </div>
+              <button class="btn btn-info w-100" onclick="handleResetPassword()">Đặt lại mật khẩu</button>
+              <div id="resetMessage" class="mt-3"></div>
+               <div class="d-flex justify-content-between align-items-center mt-3">
+                  <div id="resendOtpContainer" class="text-muted small">
+                      <!-- JS will populate this -->
+                  </div>
+                  <a href="#" class="btn btn-link btn-sm" onclick="showAuthForm('loginForm')">Quay lại đăng nhập</a>
+              </div>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Change Password Modal -->
+  <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="changePasswordModalLabel">Đổi mật khẩu</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="currentPassword" class="form-label">Mật khẩu hiện tại</label>
+            <input type="password" class="form-control" id="currentPassword" autocomplete="current-password">
+          </div>
+          <div class="mb-3">
+            <label for="changeNewPassword" class="form-label">Mật khẩu mới</label>
+            <input type="password" class="form-control" id="changeNewPassword" autocomplete="new-password">
+          </div>
+          <div class="mb-3">
+            <label for="confirmNewPassword" class="form-label">Xác nhận mật khẩu mới</label>
+            <input type="password" class="form-control" id="confirmNewPassword" autocomplete="new-password">
+          </div>
+          <div id="changePasswordMessage" class="mt-3"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+          <button type="button" class="btn btn-primary" onclick="handleChangePassword()">Lưu thay đổi</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-bold" href="../">Công cụ trực tuyến</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0" id="mainNavItems">
+          <li class="nav-item">
+            <a class="nav-link" href="../qrcode/index.html">Công cụ QR Code</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="../photo/index.html">Chỉnh sửa ảnh</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="#">Tính BHXH 1 lần</a>
+          </li>
+        </ul>
+        <div class="d-flex align-items-center ms-auto">
+          <div id="userActions">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container mt-4">
+    <div class="card p-4 p-lg-5 shadow-sm">
+      <div class="text-center mb-4">
+        <h1 class="h2 fw-bold text-success">Công cụ tính bảo hiểm xã hội một lần online miễn phí</h1>
+        <p class="text-muted">Nhập các giai đoạn đóng BHXH của bạn để ước tính số tiền trợ cấp một lần.</p>
+      </div>
+
+      <div class="row bg-light rounded-2 py-2 mb-3 d-none d-md-flex">
+        <div class="col-md-4 fw-bold">Giai đoạn nộp BHXH</div>
+        <div class="col-md-5 fw-bold">Mức lương đóng BHXH</div>
+        <div class="col-md-3 fw-bold">Đối tượng tham gia</div>
+      </div>
+
+      <div id="periods-container">
+        <!-- Các giai đoạn sẽ được thêm vào đây bằng JavaScript -->
+      </div>
+
+      <div class="border-top pt-3 mt-3">
+        <div class="d-flex flex-wrap gap-2">
+            <button id="add-compulsory-btn" class="btn btn-outline-success"><i class="bi bi-plus-circle me-1"></i>Thêm BHXH bắt buộc</button>
+            <button id="add-voluntary-btn" class="btn btn-outline-primary"><i class="bi bi-plus-circle me-1"></i>Thêm BHXH tự nguyện</button>
+            <button id="add-maternity-btn" class="btn btn-outline-info"><i class="bi bi-plus-circle me-1"></i>Thêm giai đoạn thai sản</button>
+        </div>
+      </div>
+      
+      <div class="text-center mt-4">
+        <button id="calculate-btn" class="btn btn-success btn-lg px-5">
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
+            <span class="btn-text">Tính bảo hiểm xã hội</span>
+        </button>
+      </div>
+
+      <div id="result-container" class="mt-5" style="display: none;">
+        <h3 class="text-center mb-3">Kết quả ước tính</h3>
+        <div class="alert alert-success text-center">
+            <h4 class="alert-heading">Số tiền bạn có thể nhận được</h4>
+            <p class="display-5 fw-bold mb-1" id="result-amount">0 VNĐ</p>
+            <hr>
+            <div id="result-text" class="mb-0 text-start"></div>
+        </div>
+      </div>
+
+       <div id="error-container" class="mt-4" style="display: none;">
+         <div class="alert alert-danger"></div>
+       </div>
+       
+       <div class="mt-5 p-4 bg-light rounded border">
+        <h2 class="h4">Giới thiệu Công cụ tính BHXH một lần</h2>
+        <p>Công cụ tính BHXH 1 lần online miễn phí giúp bạn nhanh chóng <strong>ước tính số tiền bảo hiểm xã hội một lần</strong> mà bạn có thể nhận được khi đủ điều kiện. Dựa trên các quy định mới nhất của Luật Bảo hiểm xã hội, chúng tôi cung cấp một công cụ chính xác và dễ sử dụng, cho phép bạn nhập chi tiết quá trình đóng BHXH của mình để có được con số ước tính đáng tin cậy.</p>
+        <p>Chỉ cần nhập các giai đoạn đóng BHXH, mức lương, và các thông tin liên quan, hệ thống sẽ tự động tính toán và đưa ra kết quả chi tiết, giúp bạn lập kế hoạch tài chính cho tương lai một cách chủ động.</p>
+        
+        <h3 class="h5 mt-4">Hướng dẫn nhập liệu</h3>
+        <ul class="list-unstyled">
+          <li class="mb-2">
+            <i class="bi bi-check-circle-fill text-success me-2"></i>
+            <strong>Bắt đầu:</strong> Nhấp vào các nút "Thêm BHXH bắt buộc", "Thêm BHXH tự nguyện" hoặc "Thêm giai đoạn thai sản" để tạo dòng nhập liệu tương ứng.
+          </li>
+          <li class="mb-2">
+            <i class="bi bi-check-circle-fill text-success me-2"></i>
+            <strong>Nhập giai đoạn:</strong> Chọn tháng/năm bắt đầu và kết thúc cho mỗi giai đoạn bạn đóng BHXH.
+          </li>
+          <li class="mb-2">
+            <i class="bi bi-check-circle-fill text-success me-2"></i>
+            <strong>Nhập mức đóng:</strong>
+            <ul>
+                <li>Đối với <strong>BHXH Bắt buộc</strong>:
+                    <ul>
+                        <li>Nếu bạn đóng theo <strong>Mức lương</strong>, hãy nhập mức lương tháng đóng BHXH (chưa bao gồm các khoản không tính đóng BHXH).</li>
+                        <li>Nếu bạn là cán bộ, công chức, viên chức đóng theo <strong>Hệ số</strong> lương nhà nước, hãy chọn "Hệ số" và nhập các thông số tương ứng.</li>
+                    </ul>
+                </li>
+                <li>Đối với <strong>BHXH Tự nguyện</strong>: Nhập mức thu nhập tháng bạn đã chọn để đóng.</li>
+            </ul>
+          </li>
+          <li class="mb-2">
+            <i class="bi bi-dash-circle-fill text-warning me-2"></i>
+            <strong>Các giai đoạn KHÔNG cần nhập:</strong> Bạn không cần nhập các khoảng thời gian gián đoạn như nghỉ không lương, nghỉ ốm đau dài ngày (quá 14 ngày/tháng), hoặc bất kỳ giai đoạn nào bạn không đóng BHXH.
+          </li>
+          <li class="mb-2">
+            <i class="bi bi-check-circle-fill text-success me-2"></i>
+            <strong>Tính toán:</strong> Sau khi nhập xong tất cả các giai đoạn, nhấn nút "Tính bảo hiểm xã hội" để xem kết quả.
+          </li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../assets/script.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
