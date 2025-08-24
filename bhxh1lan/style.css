@@ -93,6 +93,11 @@
     margin-right: 0.5rem;
 }
 
+.from-month.non-consecutive, .from-year.non-consecutive {
+    background-color: #fff3cd !important;
+}
+
+
 /* Responsive Styles */
 @media (max-width: 767.98px) {
   .period-row {
