@@ -9,9 +9,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const resultAmountEl = document.getElementById('result-amount');
     const resultTextEl = document.getElementById('result-text');
     const errorContainer = document.getElementById('error-container');
+    const totalParticipationTimeEl = document.getElementById('total-participation-time');
+    const warning2025El = document.getElementById('bhxh-warning-2025');
     
     const currentYear = new Date().getFullYear();
-    const startYear = 1995;
+    const startYear = 1980;
 
     const createMonthOptions = () => Array.from({ length: 12 }, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join('');
     const createYearOptions = () => {
@@ -117,6 +119,68 @@ document.addEventListener('DOMContentLoaded', () => {
         const newId = Date.now();
         const rowHTML = createRowHTML(type, newId);
         periodsContainer.insertAdjacentHTML('beforeend', rowHTML);
+        validateAndSummarizePeriods();
+    };
+    
+    const validateAndSummarizePeriods = () => {
+        const rows = Array.from(periodsContainer.querySelectorAll('.period-row'));
+        if (rows.length === 0) {
+            totalParticipationTimeEl.textContent = '';
+            warning2025El.style.display = 'none';
+            return;
+        }
+
+        const periods = rows.map(row => {
+            const fromMonthEl = row.querySelector('.from-month');
+            const fromYearEl = row.querySelector('.from-year');
+            return {
+                element: row,
+                fromMonthEl,
+                fromYearEl,
+                from: new Date(fromYearEl.value, fromMonthEl.value - 1, 1),
+                to: new Date(row.querySelector('.to-year').value, row.querySelector('.to-month').value - 1, 1),
+            }
+        }).sort((a, b) => a.from - b.from);
+
+        let totalMonths = 0;
+        let firstParticipationDate = periods.length > 0 ? periods[0].from : null;
+
+        periods.forEach((period, index) => {
+            // Reset background color first
+            period.fromMonthEl.classList.remove('non-consecutive');
+            period.fromYearEl.classList.remove('non-consecutive');
+
+            // Calculate total months for this period
+            const fromDate = period.from;
+            const toDate = period.to;
+            if (toDate >= fromDate) {
+                 totalMonths += (toDate.getFullYear() - fromDate.getFullYear()) * 12 + (toDate.getMonth() - fromDate.getMonth()) + 1;
+            }
+
+            // Check for continuity from the second period onwards
+            if (index > 0) {
+                const prevPeriod = periods[index - 1];
+                const expectedFromDate = new Date(prevPeriod.to.getFullYear(), prevPeriod.to.getMonth() + 1, 1);
+
+                if (period.from > expectedFromDate) {
+                     period.fromMonthEl.classList.add('non-consecutive');
+                     period.fromYearEl.classList.add('non-consecutive');
+                }
+            }
+        });
+
+        // Update total participation time display
+        const years = Math.floor(totalMonths / 12);
+        const months = totalMonths % 12;
+        totalParticipationTimeEl.textContent = `Tổng thời gian tham gia: ${years} năm ${months} tháng`;
+
+        // Check for 2025 warning
+        const warningDate = new Date(2025, 6, 1); // July 2025
+        if (firstParticipationDate && firstParticipationDate >= warningDate) {
+            warning2025El.style.display = 'block';
+        } else {
+            warning2025El.style.display = 'none';
+        }
     };
 
     periodsContainer.addEventListener('change', (e) => {
@@ -132,11 +196,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 coefficientInputs.style.display = 'none';
             }
         }
+        
+        if (e.target.matches('.from-month, .from-year, .to-month, .to-year')) {
+            validateAndSummarizePeriods();
+        }
     });
     
     periodsContainer.addEventListener('click', (e) => {
         if (e.target.closest('.delete-row-btn')) {
             e.target.closest('.period-row').remove();
+            validateAndSummarizePeriods();
         }
     });
 
@@ -151,22 +220,19 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
-        // Kiểm tra nhập liệu cho các trường hệ số: chỉ cho phép số và một dấu phẩy
-        if (e.target.matches('[data-field="heso"]') || e.target.matches('[data-field="posAllowance"]') || e.target.matches('[data-field="exFrameAllowance"]') || e.target.matches('[data-field="jobAllowance"]')) {
+        // [FIX] Sửa lỗi và cải thiện logic xác thực cho các trường nhập số thập phân (hệ số, phụ cấp)
+        if (e.target.matches('[data-field="heso"], [data-field="posAllowance"], [data-field="exFrameAllowance"], [data-field="jobAllowance"]')) {
              let value = e.target.value;
-             // Bước 1: Thay thế tất cả dấu chấm bằng dấu phẩy
+             // 1. Thay thế dấu chấm bằng dấu phẩy để thống nhất
              value = value.replace(/\./g, ',');
-
-             // Bước 2: Chỉ cho phép số và một dấu phẩy duy nhất
+             // 2. Loại bỏ các ký tự không hợp lệ (chỉ giữ lại số và dấu phẩy)
+             value = value.replace(/[^0-9,]/g, '');
+             // 3. Đảm bảo chỉ có một dấu phẩy (dấu thập phân). Giữ lại dấu đầu tiên và xóa các dấu sau đó.
              const firstCommaIndex = value.indexOf(',');
              if (firstCommaIndex !== -1) {
-                 // Xử lý phần trước và sau dấu phẩy
-                 const integerPart = value.substring(0, firstCommaIndex).replace(/[^0-9]/g, '');
-                 const decimalPart = value.substring(firstCommaIndex + 1).replace(/[^0-9]/g, ''); // Xóa tất cả ký tự không phải số
+                 const integerPart = value.substring(0, firstCommaIndex);
+                 const decimalPart = value.substring(firstCommaIndex + 1).replace(/,/g, ''); // Xóa tất cả các dấu phẩy sau dấu đầu tiên
                  value = integerPart + ',' + decimalPart;
-             } else {
-                 // Không có dấu phẩy, chỉ cho phép số
-                 value = value.replace(/[^0-9]/g, '');
              }
              e.target.value = value;
         }
@@ -309,4 +375,7 @@ document.addEventListener('DOMContentLoaded', () => {
     addCompulsoryBtn.addEventListener('click', () => addPeriodRow('batbuoc'));
     addVoluntaryBtn.addEventListener('click', () => addPeriodRow('tunguyen'));
     addMaternityBtn.addEventListener('click', () => addPeriodRow('thaisan'));
+    
+    // Initial check in case of browser auto-fill
+    validateAndSummarizePeriods();
 });
