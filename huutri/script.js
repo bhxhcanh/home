@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     const currentYear = new Date().getFullYear();
-    const startYear = 1980;
+    const startYear = 1975;
 
     const createMonthOptions = () => Array.from({ length: 12 }, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join('');
     const createYearOptions = () => {
