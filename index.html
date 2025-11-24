@@ -26,92 +26,96 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="authModalLabel">Đăng nhập</h5>
+          <h5 class="modal-title fw-bold" id="authModalLabel">Chào mừng trở lại</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body">
+        <div class="modal-body pt-2" id="authModalBody">
+          
+          <!-- Tabs Navigation -->
+          <ul class="nav nav-pills nav-fill mb-4" id="authTabNav">
+            <li class="nav-item">
+              <button class="nav-link active" id="tab-login-btn" onclick="showAuthForm('loginForm')">Đăng nhập</button>
+            </li>
+            <li class="nav-item">
+              <button class="nav-link" id="tab-register-btn" onclick="showAuthForm('registerForm')">Đăng ký</button>
+            </li>
+          </ul>
+
           <!-- Login Form -->
-          <div id="loginForm">
-            <div class="mb-3">
-              <label for="loginEmail" class="form-label">Email</label>
-              <input type="email" class="form-control" id="loginEmail" autocomplete="email">
+          <div id="loginForm" class="auth-form-container">
+            <div class="mb-3 input-group">
+              <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+              <input type="email" class="form-control" id="loginEmail" placeholder="Email của bạn" autocomplete="email">
             </div>
-            <div class="mb-3">
-              <label for="loginPassword" class="form-label">Mật khẩu</label>
-              <input type="password" class="form-control" id="loginPassword" autocomplete="current-password">
+            <div class="mb-3 input-group">
+              <span class="input-group-text"><i class="bi bi-lock"></i></span>
+              <input type="password" class="form-control" id="loginPassword" placeholder="Mật khẩu" autocomplete="current-password">
             </div>
-            <button class="btn btn-primary w-100" onclick="handleLogin()">Đăng nhập</button>
-            <div class="d-flex justify-content-between mt-2">
-              <a href="#" class="btn btn-link" onclick="showAuthForm('forgotForm')">Quên mật khẩu?</a>
-              <a href="#" class="btn btn-link" onclick="showAuthForm('registerForm')">Đăng ký</a>
+            
+            <button class="btn btn-primary w-100 mb-3" onclick="handleLogin()">Đăng nhập</button>
+            
+            <div class="text-center">
+              <a href="#" class="text-decoration-none small" onclick="showAuthForm('forgotForm')">Quên mật khẩu?</a>
             </div>
-            <div id="loginMessage" class="mt-3 text-danger"></div>
+            <div id="loginMessage" class="mt-3 text-danger text-center small"></div>
           </div>
 
           <!-- Register Form -->
-          <div id="registerForm" class="hidden">
-            <h5 class="mb-3">Đăng ký</h5>
-            <div class="mb-3">
-              <label for="regEmail" class="form-label">Email</label>
-              <input type="email" class="form-control" id="regEmail" autocomplete="email">
+          <div id="registerForm" class="auth-form-container hidden">
+            <div class="mb-3 input-group">
+              <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+              <input type="email" class="form-control" id="regEmail" placeholder="Email đăng ký" autocomplete="email">
             </div>
-            <div class="mb-3">
-              <label for="regPassword" class="form-label">Mật khẩu</label>
-              <input type="password" class="form-control" id="regPassword" autocomplete="new-password">
+            <div class="mb-3 input-group">
+               <span class="input-group-text"><i class="bi bi-lock"></i></span>
+              <input type="password" class="form-control" id="regPassword" placeholder="Mật khẩu (có chữ hoa & số)" autocomplete="new-password">
             </div>
-            <div class="mb-3">
-              <label for="regPasswordConfirm" class="form-label">Xác nhận mật khẩu</label>
-              <input type="password" class="form-control" id="regPasswordConfirm" autocomplete="new-password">
+            <div class="mb-3 input-group">
+               <span class="input-group-text"><i class="bi bi-check-lg"></i></span>
+              <input type="password" class="form-control" id="regPasswordConfirm" placeholder="Nhập lại mật khẩu" autocomplete="new-password">
             </div>
-            <button class="btn btn-success w-100" onclick="handleRegistrationRequest()">Đăng ký</button>
-            <a href="#" class="btn btn-link d-block mt-2" onclick="showAuthForm('loginForm')">Quay lại đăng nhập</a>
-            <div id="registerMessage" class="mt-3 text-danger"></div>
+            <button class="btn btn-success w-100" onclick="handleRegistrationRequest()">Đăng ký tài khoản</button>
+            <div id="registerMessage" class="mt-3 text-danger text-center small"></div>
           </div>
           
           <!-- Register OTP Form -->
-          <div id="registerOtpForm" class="hidden">
-              <h5 class="mb-3">Xác thực đăng ký</h5>
-              <p class="text-muted small">Một mã OTP đã được gửi đến email <strong id="registerOtpEmailDisplay"></strong>. Vui lòng nhập mã đó để hoàn tất.</p>
-              <div class="mb-3">
-                  <label for="registerOtpCode" class="form-label">Mã OTP</label>
-                  <input type="text" class="form-control" id="registerOtpCode" inputmode="numeric" autocomplete="one-time-code">
+          <div id="registerOtpForm" class="auth-form-container hidden">
+              <p class="text-muted small text-center mb-4">Mã xác thực đã gửi đến <strong id="registerOtpEmailDisplay"></strong>.<br>Vui lòng kiểm tra email.</p>
+              <div class="mb-3 text-center">
+                  <input type="text" class="form-control text-center fs-4 letter-spacing-2" id="registerOtpCode" placeholder="000000" maxlength="6" inputmode="numeric" autocomplete="one-time-code">
               </div>
-              <button class="btn btn-primary w-100" onclick="handleCompleteRegistration()">Xác thực &amp; Hoàn tất</button>
-              <a href="#" class="btn btn-link d-block mt-2" onclick="showAuthForm('registerForm')">Quay lại</a>
-              <div id="registerOtpMessage" class="mt-3"></div>
+              <button class="btn btn-primary w-100 mb-2" onclick="handleCompleteRegistration()">Xác thực &amp; Hoàn tất</button>
+              <button class="btn btn-link w-100 text-decoration-none text-muted small" onclick="showAuthForm('registerForm')">Quay lại</button>
+              <div id="registerOtpMessage" class="mt-3 text-center small"></div>
           </div>
 
           <!-- Forgot Password Form -->
-          <div id="forgotForm" class="hidden">
-              <h5 class="mb-3">Quên mật khẩu</h5>
-              <div class="mb-3">
-                  <label for="forgotEmail" class="form-label">Nhập email của bạn</label>
-                  <input type="email" class="form-control" id="forgotEmail" autocomplete="email">
+          <div id="forgotForm" class="auth-form-container hidden">
+              <p class="text-muted small mb-3">Nhập email của bạn để nhận mã đặt lại mật khẩu.</p>
+              <div class="mb-3 input-group">
+                  <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                  <input type="email" class="form-control" id="forgotEmail" placeholder="Email của bạn" autocomplete="email">
               </div>
-              <button class="btn btn-warning w-100" onclick="handleForgot()">Gửi OTP</button>
-              <a href="#" class="btn btn-link d-block mt-2" onclick="showAuthForm('loginForm')">Quay lại đăng nhập</a>
-              <div id="forgotMessage" class="mt-3"></div>
+              <button class="btn btn-warning w-100 mb-2 text-white" onclick="handleForgot()">Gửi mã xác thực</button>
+              <button class="btn btn-link w-100 text-decoration-none text-muted small" onclick="showAuthForm('loginForm')">Quay lại Đăng nhập</button>
+              <div id="forgotMessage" class="mt-3 text-center small"></div>
           </div>
 
           <!-- Reset Password Form -->
-          <div id="resetForm" class="hidden">
-              <h5 class="mb-3">Đặt lại mật khẩu</h5>
-              <p class="text-muted small">Một mã OTP đã được gửi đến email <strong id="resetEmailDisplay"></strong>. Vui lòng nhập mã đó bên dưới.</p>
+          <div id="resetForm" class="auth-form-container hidden">
+              <p class="text-muted small text-center">Nhập mã OTP từ email <strong id="resetEmailDisplay"></strong> và mật khẩu mới.</p>
               <div class="mb-3">
-                  <label for="otpCode" class="form-label">Mã OTP</label>
-                  <input type="text" class="form-control" id="otpCode" inputmode="numeric" autocomplete="one-time-code">
+                  <input type="text" class="form-control text-center" id="otpCode" placeholder="Mã OTP" inputmode="numeric" autocomplete="one-time-code">
               </div>
-              <div class="mb-3">
-                  <label for="newPassword" class="form-label">Mật khẩu mới</label>
-                  <input type="password" class="form-control" id="newPassword" autocomplete="new-password">
+              <div class="mb-3 input-group">
+                  <span class="input-group-text"><i class="bi bi-key"></i></span>
+                  <input type="password" class="form-control" id="newPassword" placeholder="Mật khẩu mới" autocomplete="new-password">
               </div>
-              <button class="btn btn-info w-100" onclick="handleResetPassword()">Đặt lại mật khẩu</button>
-              <div id="resetMessage" class="mt-3"></div>
-               <div class="d-flex justify-content-between align-items-center mt-3">
-                  <div id="resendOtpContainer" class="text-muted small">
-                      <!-- JS will populate this -->
-                  </div>
-                  <a href="#" class="btn btn-link btn-sm" onclick="showAuthForm('loginForm')">Quay lại đăng nhập</a>
+              <button class="btn btn-info w-100 mb-3 text-white" onclick="handleResetPassword()">Đặt lại mật khẩu</button>
+              <div id="resetMessage" class="mt-2 text-center small"></div>
+               <div class="d-flex justify-content-between align-items-center mt-3 border-top pt-2">
+                  <div id="resendOtpContainer" class="text-muted small"></div>
+                  <a href="#" class="text-decoration-none small" onclick="showAuthForm('loginForm')">Quay lại</a>
               </div>
           </div>
           
