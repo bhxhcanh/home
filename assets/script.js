@@ -1,3 +1,4 @@
+
 // assets/script.js
 
 const CONFIG = {
@@ -17,17 +18,43 @@ let changePasswordModalInstance;
 let otpTimerInterval;
 
 function showAuthForm(formId) {
-    const modalTitle = document.getElementById('authModalLabel');
-    document.querySelectorAll('#authModal .modal-body > div').forEach(form => {
-        form.classList.add('hidden');
-    });
-    document.getElementById(formId).classList.remove('hidden');
+    // Hide all forms first
+    const forms = document.querySelectorAll('#authModalBody .auth-form-container');
+    forms.forEach(form => form.classList.add('hidden'));
 
-    if (formId === 'loginForm') modalTitle.textContent = 'Đăng nhập';
-    else if (formId === 'registerForm') modalTitle.textContent = 'Đăng ký';
-    else if (formId === 'registerOtpForm') modalTitle.textContent = 'Xác thực đăng ký';
-    else if (formId === 'forgotForm') modalTitle.textContent = 'Quên mật khẩu';
-    else if (formId === 'resetForm') modalTitle.textContent = 'Đặt lại mật khẩu';
+    // Reset Title default (overwritten below if needed)
+    const modalTitle = document.getElementById('authModalLabel');
+    modalTitle.textContent = 'Tài khoản';
+
+    // Logic for Tabs visibility
+    const authTabNav = document.getElementById('authTabNav');
+    
+    // Clear previous errors
+    document.querySelectorAll('.text-danger').forEach(el => el.innerText = '');
+
+    if (formId === 'loginForm' || formId === 'registerForm') {
+        authTabNav.classList.remove('hidden');
+        document.getElementById(formId).classList.remove('hidden');
+        
+        // Update active tab visual
+        document.querySelectorAll('#authTabNav .nav-link').forEach(btn => btn.classList.remove('active'));
+        if (formId === 'loginForm') {
+            document.getElementById('tab-login-btn').classList.add('active');
+            modalTitle.textContent = 'Chào mừng trở lại';
+        } else {
+            document.getElementById('tab-register-btn').classList.add('active');
+            modalTitle.textContent = 'Tạo tài khoản mới';
+        }
+    } else {
+        // For other forms (Forgot Pass, OTP, etc.), hide the tabs
+        authTabNav.classList.add('hidden');
+        document.getElementById(formId).classList.remove('hidden');
+
+        // Set specific titles
+        if (formId === 'registerOtpForm') modalTitle.textContent = 'Xác thực đăng ký';
+        else if (formId === 'forgotForm') modalTitle.textContent = 'Quên mật khẩu';
+        else if (formId === 'resetForm') modalTitle.textContent = 'Đặt lại mật khẩu';
+    }
 }
 
 async function handleLogin() {
@@ -45,6 +72,11 @@ async function handleLogin() {
     return;
   }
   
+  const loginBtn = document.querySelector('#loginForm button');
+  const originalBtnText = loginBtn.innerHTML;
+  loginBtn.disabled = true;
+  loginBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang xử lý...';
+
   const body = `action=login&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`;
 
   try {
@@ -60,6 +92,9 @@ async function handleLogin() {
   } catch (error) {
     console.error("Login error:", error);
     loginMessage.innerText = 'Lỗi kết nối. Vui lòng thử lại.';
+  } finally {
+    loginBtn.disabled = false;
+    loginBtn.innerHTML = originalBtnText;
   }
 }
 
@@ -75,6 +110,11 @@ async function handleRegistrationRequest() {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { registerMessage.innerText = 'Định dạng email không hợp lệ.'; return; }
     if (!/^(?=.*[A-Z])(?=.*\d).{8,}$/.test(password)) { registerMessage.innerText = 'Mật khẩu phải có ít nhất 8 ký tự, bao gồm ít nhất 1 chữ hoa và 1 chữ số.'; return; }
     
+    const regBtn = document.querySelector('#registerForm button');
+    const originalBtnText = regBtn.innerHTML;
+    regBtn.disabled = true;
+    regBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang xử lý...';
+
     const body = `action=registerAndRequestOtp&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`;
     try {
         const res = await fetch(CONFIG.API_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body });
@@ -89,6 +129,9 @@ async function handleRegistrationRequest() {
     } catch (error) {
         console.error("Registration request error:", error);
         registerMessage.innerText = 'Lỗi kết nối. Vui lòng thử lại.';
+    } finally {
+        regBtn.disabled = false;
+        regBtn.innerHTML = originalBtnText;
     }
 }
 
@@ -311,17 +354,17 @@ function initApp() {
         
         userActions.innerHTML = `<div class="dropdown">
                                   <button class="btn btn-outline-secondary dropdown-toggle btn-sm" type="button" id="userMenuButton" data-bs-toggle="dropdown" aria-expanded="false" title="${greeting}">
-                                    ${greeting}
+                                    <i class="bi bi-person-circle me-1"></i> ${greeting}
                                   </button>
                                   <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenuButton">
-                                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#changePasswordModal">Đổi mật khẩu</a></li>
+                                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#changePasswordModal"><i class="bi bi-key me-2"></i>Đổi mật khẩu</a></li>
                                     <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="#" onclick="logout()">Đăng xuất</a></li>
+                                    <li><a class="dropdown-item text-danger" href="#" onclick="logout()"><i class="bi bi-box-arrow-right me-2"></i>Đăng xuất</a></li>
                                   </ul>
                                 </div>`;
     } else {
         // Logged Out State
-        userActions.innerHTML = `<button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#authModal">Đăng nhập / Đăng ký</button>`;
+        userActions.innerHTML = `<button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#authModal"><i class="bi bi-person me-1"></i> Đăng nhập / Đăng ký</button>`;
     }
 }
 
