@@ -1,3 +1,4 @@
+
 /* assets/style.css */
 
 body {
@@ -51,4 +52,60 @@ button.btn {
 }
 .tool-description li {
   margin-bottom: 0.5rem;
+}
+
+/* AUTH MODAL STYLES */
+#authModal .modal-content {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+#authModal .modal-header {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+#authModal .nav-pills {
+    background-color: #f1f3f5;
+    border-radius: 8px;
+    padding: 4px;
+}
+
+#authModal .nav-link {
+    color: #495057;
+    font-weight: 600;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+#authModal .nav-link.active {
+    background-color: #fff;
+    color: #0d6efd;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+#authModal .input-group-text {
+    background-color: #f8f9fa;
+    border-right: none;
+}
+
+#authModal .form-control {
+    border-left: none;
+}
+
+#authModal .form-control:focus {
+    box-shadow: none;
+    border-color: #dee2e6;
+}
+
+#authModal .input-group:focus-within .input-group-text,
+#authModal .input-group:focus-within .form-control {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25);
+}
+
+#authModal .btn-primary, #authModal .btn-success {
+    padding: 10px;
+    font-weight: 600;
 }
