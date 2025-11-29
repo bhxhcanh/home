@@ -1,4 +1,5 @@
 
+
 // assets/script_chung.js
 
 const CONFIG = {
@@ -20,12 +21,12 @@ let otpTimerInterval;
 // --- VIEW NAVIGATION (SPA) ---
 function switchView(viewName) {
     // Hide all views
-    document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('.view-section').forEach(el => el.classList.add('d-none'));
     
     // Show active view
     const activeView = document.getElementById(`view-${viewName}`);
     if (activeView) {
-        activeView.classList.remove('hidden');
+        activeView.classList.remove('d-none');
     }
     
     // Update active nav state
@@ -49,7 +50,7 @@ function switchView(viewName) {
 // --- AUTH LOGIC ---
 function showAuthForm(formId) {
     const forms = document.querySelectorAll('#authModalBody .auth-form-container');
-    forms.forEach(form => form.classList.add('hidden'));
+    forms.forEach(form => form.classList.add('d-none'));
 
     const modalTitle = document.getElementById('authModalLabel');
     modalTitle.textContent = 'Tài khoản';
@@ -58,8 +59,8 @@ function showAuthForm(formId) {
     document.querySelectorAll('.text-danger').forEach(el => el.innerText = '');
 
     if (formId === 'loginForm' || formId === 'registerForm') {
-        authTabNav.classList.remove('hidden');
-        document.getElementById(formId).classList.remove('hidden');
+        authTabNav.classList.remove('d-none');
+        document.getElementById(formId).classList.remove('d-none');
         
         document.querySelectorAll('#authTabNav .nav-link').forEach(btn => btn.classList.remove('active'));
         if (formId === 'loginForm') {
@@ -70,8 +71,8 @@ function showAuthForm(formId) {
             modalTitle.textContent = 'Tạo tài khoản mới';
         }
     } else {
-        authTabNav.classList.add('hidden');
-        document.getElementById(formId).classList.remove('hidden');
+        authTabNav.classList.add('d-none');
+        document.getElementById(formId).classList.remove('d-none');
 
         if (formId === 'registerOtpForm') modalTitle.textContent = 'Xác thực đăng ký';
         else if (formId === 'forgotForm') modalTitle.textContent = 'Quên mật khẩu';
