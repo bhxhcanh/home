@@ -1,6 +1,7 @@
 
 
 
+
 // assets/script_tracuu.js
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -35,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Reset Form
     resetBtn.addEventListener('click', () => {
         form.reset();
-        resultsContainer.classList.add('hidden');
+        resultsContainer.classList.add('d-none');
         resultsBody.innerHTML = '';
         resultsHead.innerHTML = '';
         messageEl.textContent = '';
@@ -77,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang tìm...';
         messageEl.textContent = '';
-        resultsContainer.classList.add('hidden');
+        resultsContainer.classList.add('d-none');
         resultsBody.innerHTML = '';
         resultsHead.innerHTML = '';
 
@@ -204,6 +205,6 @@ document.addEventListener('DOMContentLoaded', () => {
             tbodyHtml += '</tr>';
         });
         resultsBody.innerHTML = tbodyHtml;
-        resultsContainer.classList.remove('hidden');
+        resultsContainer.classList.remove('d-none');
     }
 });
