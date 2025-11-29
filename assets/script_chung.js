@@ -1,5 +1,5 @@
 
-// assets/script.js
+// assets/script_chung.js
 
 const CONFIG = {
   API_URL: 'https://script.google.com/macros/s/AKfycbyNZD5MEluEvV0yNcc-U8aS77ouR62QlmXqSWZKEZXK9OM8rAQeaT8aMVK-7q7q3ZzC/exec'
@@ -12,31 +12,55 @@ if (!deviceId) {
 }
 
 let currentEmail = '';
-let tempRegEmail = ''; // For the new registration flow
+let tempRegEmail = ''; 
 let authModalInstance;
 let changePasswordModalInstance;
 let otpTimerInterval;
 
+// --- VIEW NAVIGATION (SPA) ---
+function switchView(viewName) {
+    // Hide all views
+    document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+    
+    // Show active view
+    const activeView = document.getElementById(`view-${viewName}`);
+    if (activeView) {
+        activeView.classList.remove('hidden');
+    }
+    
+    // Update active nav state
+    document.querySelectorAll('#mainNavItems .nav-link').forEach(link => {
+        link.classList.remove('active');
+        if (link.dataset.view === viewName) {
+            link.classList.add('active');
+        }
+    });
+
+    // Close mobile menu if open
+    const navbarContent = document.getElementById('navbarContent');
+    if (navbarContent && navbarContent.classList.contains('show')) {
+        bootstrap.Collapse.getOrCreateInstance(navbarContent).hide();
+    }
+    
+    // Scroll to top
+    window.scrollTo(0, 0);
+}
+
+// --- AUTH LOGIC ---
 function showAuthForm(formId) {
-    // Hide all forms first
     const forms = document.querySelectorAll('#authModalBody .auth-form-container');
     forms.forEach(form => form.classList.add('hidden'));
 
-    // Reset Title default (overwritten below if needed)
     const modalTitle = document.getElementById('authModalLabel');
     modalTitle.textContent = 'Tài khoản';
 
-    // Logic for Tabs visibility
     const authTabNav = document.getElementById('authTabNav');
-    
-    // Clear previous errors
     document.querySelectorAll('.text-danger').forEach(el => el.innerText = '');
 
     if (formId === 'loginForm' || formId === 'registerForm') {
         authTabNav.classList.remove('hidden');
         document.getElementById(formId).classList.remove('hidden');
         
-        // Update active tab visual
         document.querySelectorAll('#authTabNav .nav-link').forEach(btn => btn.classList.remove('active'));
         if (formId === 'loginForm') {
             document.getElementById('tab-login-btn').classList.add('active');
@@ -46,11 +70,9 @@ function showAuthForm(formId) {
             modalTitle.textContent = 'Tạo tài khoản mới';
         }
     } else {
-        // For other forms (Forgot Pass, OTP, etc.), hide the tabs
         authTabNav.classList.add('hidden');
         document.getElementById(formId).classList.remove('hidden');
 
-        // Set specific titles
         if (formId === 'registerOtpForm') modalTitle.textContent = 'Xác thực đăng ký';
         else if (formId === 'forgotForm') modalTitle.textContent = 'Quên mật khẩu';
         else if (formId === 'resetForm') modalTitle.textContent = 'Đặt lại mật khẩu';
@@ -75,7 +97,7 @@ async function handleLogin() {
   const loginBtn = document.querySelector('#loginForm button');
   const originalBtnText = loginBtn.innerHTML;
   loginBtn.disabled = true;
-  loginBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang xử lý...';
+  loginBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang xử lý...';
 
   const body = `action=login&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`;
 
@@ -113,21 +135,20 @@ async function handleRegistrationRequest() {
     const regBtn = document.querySelector('#registerForm button');
     const originalBtnText = regBtn.innerHTML;
     regBtn.disabled = true;
-    regBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang xử lý...';
+    regBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang xử lý...';
 
     const body = `action=registerAndRequestOtp&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`;
     try {
         const res = await fetch(CONFIG.API_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body });
         const data = await res.json();
         if (data.success) {
-            tempRegEmail = email; // Store email for the next step
+            tempRegEmail = email; 
             document.getElementById('registerOtpEmailDisplay').textContent = email;
             showAuthForm('registerOtpForm');
         } else {
             registerMessage.innerText = data.error || 'Yêu cầu đăng ký thất bại.';
         }
     } catch (error) {
-        console.error("Registration request error:", error);
         registerMessage.innerText = 'Lỗi kết nối. Vui lòng thử lại.';
     } finally {
         regBtn.disabled = false;
@@ -139,35 +160,27 @@ async function handleCompleteRegistration() {
     const otp = document.getElementById('registerOtpCode').value.trim();
     const messageEl = document.getElementById('registerOtpMessage');
     messageEl.innerText = '';
-
-    if (!otp) {
-        messageEl.innerText = 'Vui lòng nhập mã OTP.';
-        return;
-    }
+    if (!otp) { messageEl.innerText = 'Vui lòng nhập mã OTP.'; return; }
 
     const body = `action=verifyRegistrationOtp&email=${encodeURIComponent(tempRegEmail)}&otp=${encodeURIComponent(otp)}`;
     try {
         const res = await fetch(CONFIG.API_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body });
         const data = await res.json();
         if (data.success) {
-            alert(data.message || 'Đăng ký thành công! Bạn có thể đăng nhập ngay bây giờ.');
+            alert(data.message || 'Đăng ký thành công!');
             showAuthForm('loginForm');
         } else {
             messageEl.innerText = data.error || 'Xác thực thất bại.';
         }
     } catch (error) {
-        console.error("Registration completion error:", error);
-        messageEl.innerText = 'Lỗi kết nối. Vui lòng thử lại.';
+        messageEl.innerText = 'Lỗi kết nối.';
     }
 }
 
-
 function startOtpCountdown(duration = 60) {
     if (otpTimerInterval) clearInterval(otpTimerInterval);
-
     const container = document.getElementById('resendOtpContainer');
     let timer = duration;
-
     const updateTimer = () => {
         if (timer > 0) {
             container.innerHTML = `<span>Gửi lại mã sau ${timer}s</span>`;
@@ -177,81 +190,52 @@ function startOtpCountdown(duration = 60) {
             container.innerHTML = `<a href="#" onclick="event.preventDefault(); handleForgot(true);">Gửi lại mã OTP</a>`;
         }
     };
-
-    updateTimer(); // Initial call
+    updateTimer();
     otpTimerInterval = setInterval(updateTimer, 1000);
 }
 
 async function handleForgot(isResend = false) {
     const emailInput = document.getElementById('forgotEmail');
     const messageContainer = isResend ? document.getElementById('resetMessage') : document.getElementById('forgotMessage');
-
-    // Clear previous messages
     document.getElementById('forgotMessage').innerText = '';
     document.getElementById('resetMessage').innerText = '';
 
     const email = isResend ? currentEmail : emailInput.value.trim();
+    if (!email) { messageContainer.innerText = 'Vui lòng nhập email.'; return; }
+    if (!isResend) currentEmail = email;
 
-    if (!email) {
-        messageContainer.innerText = 'Vui lòng nhập email.';
-        messageContainer.className = 'mt-3 text-danger';
-        return;
-    }
-
-    if (!isResend) {
-        currentEmail = email;
-    }
-
-    if (isResend) {
-        document.getElementById('resendOtpContainer').innerHTML = `<span>Đang gửi...</span>`;
-    } else {
-        messageContainer.innerText = 'Đang gửi...';
-        messageContainer.className = 'mt-3 text-muted';
-    }
+    if (isResend) document.getElementById('resendOtpContainer').innerHTML = `<span>Đang gửi...</span>`;
+    else messageContainer.innerText = 'Đang gửi...';
 
     const body = `action=requestPasswordOtp&email=${encodeURIComponent(email)}`;
     try {
         const res = await fetch(CONFIG.API_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body });
         const data = await res.json();
-
         if (data.success) {
             if (!isResend) {
                 document.getElementById('resetEmailDisplay').textContent = email;
                 showAuthForm('resetForm');
             }
-            // Show success message in the reset form's message area
             const resetMsgEl = document.getElementById('resetMessage');
             resetMsgEl.innerText = data.message;
             resetMsgEl.className = 'mt-3 text-success';
-
             startOtpCountdown();
         } else {
-            // Show error in the appropriate message area
             messageContainer.className = 'mt-3 text-danger';
             messageContainer.innerText = data.error;
-            // If it was a resend attempt, restore the resend link
-            if (isResend) {
-                document.getElementById('resendOtpContainer').innerHTML = `<a href="#" onclick="event.preventDefault(); handleForgot(true);">Gửi lại mã OTP</a>`;
-            }
+            if (isResend) document.getElementById('resendOtpContainer').innerHTML = `<a href="#" onclick="event.preventDefault(); handleForgot(true);">Gửi lại mã OTP</a>`;
         }
     } catch (error) {
-        console.error("Forgot password error:", error);
-        messageContainer.innerText = 'Lỗi kết nối. Vui lòng thử lại.';
-        messageContainer.className = 'mt-3 text-danger';
-        if (isResend) {
-             document.getElementById('resendOtpContainer').innerHTML = `<a href="#" onclick="event.preventDefault(); handleForgot(true);">Gửi lại mã OTP</a>`;
-        }
+        messageContainer.innerText = 'Lỗi kết nối.';
+        if (isResend) document.getElementById('resendOtpContainer').innerHTML = `<a href="#" onclick="event.preventDefault(); handleForgot(true);">Gửi lại mã OTP</a>`;
     }
 }
-
 
 async function handleResetPassword() {
     const otp = document.getElementById('otpCode').value.trim();
     const newPassword = document.getElementById('newPassword').value.trim();
     const resetMessage = document.getElementById('resetMessage');
-    resetMessage.innerText = '';
     if (!otp || !newPassword) { resetMessage.innerText = 'Vui lòng nhập OTP và mật khẩu mới.'; return; }
-    if (!/^(?=.*[A-Z])(?=.*\d).{8,}$/.test(newPassword)) { resetMessage.innerText = 'Mật khẩu mới phải có ít nhất 8 ký tự, bao gồm ít nhất 1 chữ hoa và 1 chữ số.'; return; }
     
     const body = `action=verifyOtpAndResetPassword&email=${encodeURIComponent(currentEmail)}&otp=${encodeURIComponent(otp)}&newPassword=${encodeURIComponent(newPassword)}`;
     try {
@@ -261,11 +245,10 @@ async function handleResetPassword() {
             alert(data.message || 'Đặt lại mật khẩu thành công!');
             showAuthForm('loginForm');
         } else {
-            resetMessage.innerText = data.error || data.message;
+            resetMessage.innerText = data.error;
         }
     } catch (error) {
-        console.error("Reset password error:", error);
-        resetMessage.innerText = 'Lỗi kết nối. Vui lòng thử lại.';
+        resetMessage.innerText = 'Lỗi kết nối.';
     }
 }
 
@@ -274,59 +257,24 @@ async function handleChangePassword() {
     const newPassword = document.getElementById('changeNewPassword').value;
     const confirmPassword = document.getElementById('confirmNewPassword').value;
     const messageEl = document.getElementById('changePasswordMessage');
-    messageEl.textContent = '';
-    messageEl.className = 'mt-3';
-
-    if (!currentPassword || !newPassword || !confirmPassword) {
-        messageEl.textContent = 'Vui lòng điền đầy đủ các trường.';
-        messageEl.classList.add('text-danger');
-        return;
-    }
-
-    if (newPassword !== confirmPassword) {
-        messageEl.textContent = 'Mật khẩu mới không khớp.';
-        messageEl.classList.add('text-danger');
-        return;
-    }
-
-    if (!/^(?=.*[A-Z])(?=.*\d).{8,}$/.test(newPassword)) {
-        messageEl.textContent = 'Mật khẩu phải có ít nhất 8 ký tự, bao gồm ít nhất 1 chữ hoa và 1 chữ số.';
-        messageEl.classList.add('text-danger');
-        return;
-    }
-
+    
+    if (!currentPassword || !newPassword || !confirmPassword) { messageEl.textContent = 'Vui lòng điền đầy đủ.'; return; }
+    if (newPassword !== confirmPassword) { messageEl.textContent = 'Mật khẩu không khớp.'; return; }
+    
     const user = JSON.parse(localStorage.getItem('bhyt_user') || '{}');
-    if (!user.sessionId) {
-        alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
-        logout();
-        return;
-    }
-
     const body = `action=changePassword&sessionId=${encodeURIComponent(user.sessionId)}&currentPassword=${encodeURIComponent(currentPassword)}&newPassword=${encodeURIComponent(newPassword)}`;
-
     try {
         const res = await fetch(CONFIG.API_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body });
         const data = await res.json();
-
         if (data.success) {
             messageEl.textContent = data.message;
             messageEl.classList.add('text-success');
-            setTimeout(() => {
-                changePasswordModalInstance.hide();
-                // Clear fields after closing
-                document.getElementById('currentPassword').value = '';
-                document.getElementById('changeNewPassword').value = '';
-                document.getElementById('confirmNewPassword').value = '';
-                messageEl.textContent = '';
-            }, 2000);
+            setTimeout(() => { changePasswordModalInstance.hide(); messageEl.textContent = ''; }, 2000);
         } else {
-            messageEl.textContent = data.error || 'Đã xảy ra lỗi.';
-            messageEl.classList.add('text-danger');
+            messageEl.textContent = data.error || 'Lỗi.';
         }
     } catch (error) {
-        console.error('Change password error:', error);
-        messageEl.textContent = 'Lỗi kết nối. Vui lòng thử lại.';
-        messageEl.classList.add('text-danger');
+        messageEl.textContent = 'Lỗi kết nối.';
     }
 }
 
@@ -334,11 +282,7 @@ function logout() {
   const user = JSON.parse(localStorage.getItem('bhyt_user') || '{}');
   if (user.sessionId) {
     const body = `action=logout&sessionId=${encodeURIComponent(user.sessionId)}`;
-    try {
-      fetch(CONFIG.API_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body, keepalive: true });
-    } catch (error) {
-      console.error("Error during server-side logout call:", error);
-    }
+    fetch(CONFIG.API_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body, keepalive: true }).catch(console.error);
   }
   localStorage.removeItem('bhyt_user');
   window.location.reload();
@@ -347,60 +291,43 @@ function logout() {
 function initApp() {
     const user = JSON.parse(localStorage.getItem('bhyt_user') || '{}');
     const userActions = document.getElementById('userActions');
+    const navTracuu = document.getElementById('nav-tracuu');
 
     if (user && user.sessionId) {
-        // Logged In State
         const greeting = `Xin chào, ${user.email}`;
-        
         userActions.innerHTML = `<div class="dropdown">
                                   <button class="btn btn-outline-secondary dropdown-toggle btn-sm" type="button" id="userMenuButton" data-bs-toggle="dropdown" aria-expanded="false" title="${greeting}">
                                     <i class="bi bi-person-circle me-1"></i> ${greeting}
                                   </button>
                                   <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenuButton">
-                                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#changePasswordModal"><i class="bi bi-key me-2"></i>Đổi mật khẩu</a></li>
+                                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#changePasswordModal">Đổi mật khẩu</a></li>
                                     <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item text-danger" href="#" onclick="logout()"><i class="bi bi-box-arrow-right me-2"></i>Đăng xuất</a></li>
+                                    <li><a class="dropdown-item text-danger" href="#" onclick="logout()">Đăng xuất</a></li>
                                   </ul>
                                 </div>`;
+        
+        // Kiểm tra quyền tra cứu
+        const allowedRoles = ['Cộng tác viên', 'Tra cứu', 'Quản trị'];
+        if (user.role && allowedRoles.includes(user.role)) {
+            if (navTracuu) navTracuu.classList.remove('d-none');
+        } else {
+            if (navTracuu) navTracuu.classList.add('d-none');
+        }
+
     } else {
-        // Logged Out State
-        userActions.innerHTML = `<button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#authModal"><i class="bi bi-person me-1"></i> Đăng nhập / Đăng ký</button>`;
+        userActions.innerHTML = `<button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#authModal">Đăng nhập / Đăng ký</button>`;
+        if (navTracuu) navTracuu.classList.add('d-none');
     }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Init Auth Modals
   authModalInstance = new bootstrap.Modal(document.getElementById('authModal'));
   changePasswordModalInstance = new bootstrap.Modal(document.getElementById('changePasswordModal'));
-
-  // Login on Enter key press in the password field
-  const loginPasswordField = document.getElementById('loginPassword');
-  if (loginPasswordField) {
-    loginPasswordField.addEventListener('keyup', function(event) {
-        if (event.key === 'Enter') {
-            event.preventDefault(); // Prevent any default action
-            handleLogin();
-        }
-    });
-  }
   
-  // Initialize main app logic
   initApp();
 
-  // Auto-hide mobile navbar on menu item click
-  const navLinks = document.querySelectorAll('#navbarContent .nav-link');
-  const navbarContent = document.getElementById('navbarContent');
-  
-  if (navbarContent) {
-    const bsCollapse = bootstrap.Collapse.getOrCreateInstance(navbarContent);
-    navLinks.forEach(link => {
-      link.addEventListener('click', () => {
-        // If the collapsible menu is currently shown, hide it.
-        // This is primarily for mobile view where the menu is toggled.
-        if (navbarContent.classList.contains('show')) {
-          bsCollapse.hide();
-        }
-      });
-    });
+  const loginPasswordField = document.getElementById('loginPassword');
+  if (loginPasswordField) {
+    loginPasswordField.addEventListener('keyup', (event) => { if (event.key === 'Enter') handleLogin(); });
   }
 });
