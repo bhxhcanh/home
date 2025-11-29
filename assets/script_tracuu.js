@@ -1,8 +1,5 @@
 
 
-
-
-
 // assets/script_tracuu.js
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -198,11 +195,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     value = parseInt(value).toLocaleString('vi-VN');
                 } else if (['ngaySinh', 'hanTheTu', 'hanTheDen'].includes(col.key)) {
                     value = formatDate(value);
-                } else if (col.key === 'diaChiLh') {
-                    value = `<span class="d-inline-block text-truncate" style="max-width: 150px;" title="${value}">${value}</span>`;
+                }
+                // Removed explicit text-truncate for diaChiLh to allow full display
+
+                let tdStyle = '';
+                // Add specific styling for Address column to allow wrapping and sufficient width
+                if (col.key === 'diaChiLh') {
+                    tdStyle = 'style="white-space: normal; min-width: 250px;"';
                 }
 
-                tbodyHtml += `<td>${value}</td>`;
+                tbodyHtml += `<td ${tdStyle}>${value}</td>`;
             });
             tbodyHtml += '</tr>';
         });
