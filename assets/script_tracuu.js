@@ -2,6 +2,7 @@
 
 
 
+
 // assets/script_tracuu.js
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -93,7 +94,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await fetch(CONFIG.API_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: body
+                body: body,
+                redirect: 'follow'
             });
 
             const data = await res.json();
