@@ -1,4 +1,5 @@
 
+
 // assets/script_photo.js
 
 function initPhotoEditor() {
@@ -78,14 +79,14 @@ function initPhotoEditor() {
             originalAspectRatio = img.width / img.height;
             resetEditorState();
             addHistoryState({ image: img, width: img.width, height: img.height }, true);
-            uploader.classList.add('hidden'); editor.classList.remove('hidden'); switchTab('resize');
+            uploader.classList.add('d-none'); editor.classList.remove('d-none'); switchTab('resize');
         };
         img.src = src;
     }
 
     function resetEditor() {
         if (!confirm('Tải ảnh mới?')) return;
-        uploader.classList.remove('hidden'); editor.classList.add('hidden'); uploadInput.value = ''; resetEditorState();
+        uploader.classList.remove('d-none'); editor.classList.add('d-none'); uploadInput.value = ''; resetEditorState();
     }
 
     function resetEditorState() {
