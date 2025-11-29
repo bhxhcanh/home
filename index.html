@@ -1,12 +1,14 @@
+
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Công cụ trực tuyến</title>
+  <title>Bộ công cụ trực tuyến - Mabuu.vn</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="style.css">
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZS5G3PWFSD"></script>
 <!-- Google tag (gtag.js) -->
@@ -15,13 +17,12 @@
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-
   gtag('config', 'G-ZS5G3PWFSD');
 </script>
 </head>
 <body>
 
-  <!-- Authentication Modal -->
+  <!-- Authentication Modal (Shared) -->
   <div class="modal fade" id="authModal" tabindex="-1" aria-labelledby="authModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -30,101 +31,58 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body pt-2" id="authModalBody">
-          
           <!-- Tabs Navigation -->
           <ul class="nav nav-pills nav-fill mb-4" id="authTabNav">
-            <li class="nav-item">
-              <button class="nav-link active" id="tab-login-btn" onclick="showAuthForm('loginForm')">Đăng nhập</button>
-            </li>
-            <li class="nav-item">
-              <button class="nav-link" id="tab-register-btn" onclick="showAuthForm('registerForm')">Đăng ký</button>
-            </li>
+            <li class="nav-item"><button class="nav-link active" id="tab-login-btn" onclick="showAuthForm('loginForm')">Đăng nhập</button></li>
+            <li class="nav-item"><button class="nav-link" id="tab-register-btn" onclick="showAuthForm('registerForm')">Đăng ký</button></li>
           </ul>
-
           <!-- Login Form -->
           <div id="loginForm" class="auth-form-container">
-            <div class="mb-3 input-group">
-              <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-              <input type="email" class="form-control" id="loginEmail" placeholder="Email của bạn" autocomplete="email">
-            </div>
-            <div class="mb-3 input-group">
-              <span class="input-group-text"><i class="bi bi-lock"></i></span>
-              <input type="password" class="form-control" id="loginPassword" placeholder="Mật khẩu" autocomplete="current-password">
-            </div>
-            
+            <div class="mb-3 input-group"><span class="input-group-text"><i class="bi bi-envelope"></i></span><input type="email" class="form-control" id="loginEmail" placeholder="Email của bạn" autocomplete="email"></div>
+            <div class="mb-3 input-group"><span class="input-group-text"><i class="bi bi-lock"></i></span><input type="password" class="form-control" id="loginPassword" placeholder="Mật khẩu" autocomplete="current-password"></div>
             <button class="btn btn-primary w-100 mb-3" onclick="handleLogin()">Đăng nhập</button>
-            
-            <div class="text-center">
-              <a href="#" class="text-decoration-none small" onclick="showAuthForm('forgotForm')">Quên mật khẩu?</a>
-            </div>
+            <div class="text-center"><a href="#" class="text-decoration-none small" onclick="showAuthForm('forgotForm')">Quên mật khẩu?</a></div>
             <div id="loginMessage" class="mt-3 text-danger text-center small"></div>
           </div>
-
           <!-- Register Form -->
           <div id="registerForm" class="auth-form-container hidden">
-            <div class="mb-3 input-group">
-              <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-              <input type="email" class="form-control" id="regEmail" placeholder="Email đăng ký" autocomplete="email">
-            </div>
-            <div class="mb-3 input-group">
-               <span class="input-group-text"><i class="bi bi-lock"></i></span>
-              <input type="password" class="form-control" id="regPassword" placeholder="Mật khẩu (có chữ hoa & số)" autocomplete="new-password">
-            </div>
-            <div class="mb-3 input-group">
-               <span class="input-group-text"><i class="bi bi-check-lg"></i></span>
-              <input type="password" class="form-control" id="regPasswordConfirm" placeholder="Nhập lại mật khẩu" autocomplete="new-password">
-            </div>
+            <div class="mb-3 input-group"><span class="input-group-text"><i class="bi bi-envelope"></i></span><input type="email" class="form-control" id="regEmail" placeholder="Email đăng ký" autocomplete="email"></div>
+            <div class="mb-3 input-group"><span class="input-group-text"><i class="bi bi-lock"></i></span><input type="password" class="form-control" id="regPassword" placeholder="Mật khẩu (có chữ hoa & số)" autocomplete="new-password"></div>
+            <div class="mb-3 input-group"><span class="input-group-text"><i class="bi bi-check-lg"></i></span><input type="password" class="form-control" id="regPasswordConfirm" placeholder="Nhập lại mật khẩu" autocomplete="new-password"></div>
             <button class="btn btn-success w-100" onclick="handleRegistrationRequest()">Đăng ký tài khoản</button>
             <div id="registerMessage" class="mt-3 text-danger text-center small"></div>
           </div>
-          
           <!-- Register OTP Form -->
           <div id="registerOtpForm" class="auth-form-container hidden">
               <p class="text-muted small text-center mb-4">Mã xác thực đã gửi đến <strong id="registerOtpEmailDisplay"></strong>.<br>Vui lòng kiểm tra email.</p>
-              <div class="mb-3 text-center">
-                  <input type="text" class="form-control text-center fs-4 letter-spacing-2" id="registerOtpCode" placeholder="000000" maxlength="6" inputmode="numeric" autocomplete="one-time-code">
-              </div>
+              <div class="mb-3 text-center"><input type="text" class="form-control text-center fs-4 letter-spacing-2" id="registerOtpCode" placeholder="000000" maxlength="6" inputmode="numeric" autocomplete="one-time-code"></div>
               <button class="btn btn-primary w-100 mb-2" onclick="handleCompleteRegistration()">Xác thực &amp; Hoàn tất</button>
               <button class="btn btn-link w-100 text-decoration-none text-muted small" onclick="showAuthForm('registerForm')">Quay lại</button>
               <div id="registerOtpMessage" class="mt-3 text-center small"></div>
           </div>
-
           <!-- Forgot Password Form -->
           <div id="forgotForm" class="auth-form-container hidden">
               <p class="text-muted small mb-3">Nhập email của bạn để nhận mã đặt lại mật khẩu.</p>
-              <div class="mb-3 input-group">
-                  <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                  <input type="email" class="form-control" id="forgotEmail" placeholder="Email của bạn" autocomplete="email">
-              </div>
+              <div class="mb-3 input-group"><span class="input-group-text"><i class="bi bi-envelope"></i></span><input type="email" class="form-control" id="forgotEmail" placeholder="Email của bạn" autocomplete="email"></div>
               <button class="btn btn-warning w-100 mb-2 text-white" onclick="handleForgot()">Gửi mã xác thực</button>
               <button class="btn btn-link w-100 text-decoration-none text-muted small" onclick="showAuthForm('loginForm')">Quay lại Đăng nhập</button>
               <div id="forgotMessage" class="mt-3 text-center small"></div>
           </div>
-
           <!-- Reset Password Form -->
           <div id="resetForm" class="auth-form-container hidden">
               <p class="text-muted small text-center">Nhập mã OTP từ email <strong id="resetEmailDisplay"></strong> và mật khẩu mới.</p>
-              <div class="mb-3">
-                  <input type="text" class="form-control text-center" id="otpCode" placeholder="Mã OTP" inputmode="numeric" autocomplete="one-time-code">
-              </div>
-              <div class="mb-3 input-group">
-                  <span class="input-group-text"><i class="bi bi-key"></i></span>
-                  <input type="password" class="form-control" id="newPassword" placeholder="Mật khẩu mới" autocomplete="new-password">
-              </div>
+              <div class="mb-3"><input type="text" class="form-control text-center" id="otpCode" placeholder="Mã OTP" inputmode="numeric" autocomplete="one-time-code"></div>
+              <div class="mb-3 input-group"><span class="input-group-text"><i class="bi bi-key"></i></span><input type="password" class="form-control" id="newPassword" placeholder="Mật khẩu mới" autocomplete="new-password"></div>
               <button class="btn btn-info w-100 mb-3 text-white" onclick="handleResetPassword()">Đặt lại mật khẩu</button>
               <div id="resetMessage" class="mt-2 text-center small"></div>
-               <div class="d-flex justify-content-between align-items-center mt-3 border-top pt-2">
-                  <div id="resendOtpContainer" class="text-muted small"></div>
-                  <a href="#" class="text-decoration-none small" onclick="showAuthForm('loginForm')">Quay lại</a>
-              </div>
+               <div class="d-flex justify-content-between align-items-center mt-3 border-top pt-2"><div id="resendOtpContainer" class="text-muted small"></div><a href="#" class="text-decoration-none small" onclick="showAuthForm('loginForm')">Quay lại</a></div>
           </div>
-          
         </div>
       </div>
     </div>
   </div>
   
-  <!-- Change Password Modal -->
+  <!-- Change Password Modal (Shared) -->
   <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -133,18 +91,9 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <div class="mb-3">
-            <label for="currentPassword" class="form-label">Mật khẩu hiện tại</label>
-            <input type="password" class="form-control" id="currentPassword" autocomplete="current-password">
-          </div>
-          <div class="mb-3">
-            <label for="changeNewPassword" class="form-label">Mật khẩu mới</label>
-            <input type="password" class="form-control" id="changeNewPassword" autocomplete="new-password">
-          </div>
-          <div class="mb-3">
-            <label for="confirmNewPassword" class="form-label">Xác nhận mật khẩu mới</label>
-            <input type="password" class="form-control" id="confirmNewPassword" autocomplete="new-password">
-          </div>
+          <div class="mb-3"><label for="currentPassword" class="form-label">Mật khẩu hiện tại</label><input type="password" class="form-control" id="currentPassword" autocomplete="current-password"></div>
+          <div class="mb-3"><label for="changeNewPassword" class="form-label">Mật khẩu mới</label><input type="password" class="form-control" id="changeNewPassword" autocomplete="new-password"></div>
+          <div class="mb-3"><label for="confirmNewPassword" class="form-label">Xác nhận mật khẩu mới</label><input type="password" class="form-control" id="confirmNewPassword" autocomplete="new-password"></div>
           <div id="changePasswordMessage" class="mt-3"></div>
         </div>
         <div class="modal-footer">
@@ -155,85 +104,227 @@
     </div>
   </div>
 
-  <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
+  <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top">
     <div class="container-fluid">
-      <a class="navbar-brand fw-bold" href="/">Công cụ trực tuyến</a>
+      <a class="navbar-brand fw-bold" href="#" onclick="switchView('home')">Công cụ trực tuyến</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarContent">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0" id="mainNavItems">
-          <li class="nav-item">
-            <a class="nav-link" href="qrcode/index.html">Công cụ QR Code</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="photo/index.html">Chỉnh sửa ảnh</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="bhxh1lan/index.html">Tính BHXH 1 lần</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="huutri/index.html">Tính Hưu trí</a>
-          </li>
+          <li class="nav-item"><a class="nav-link" href="#" onclick="switchView('qrcode')" data-view="qrcode">Công cụ QR Code</a></li>
+          <li class="nav-item"><a class="nav-link" href="#" onclick="switchView('photo')" data-view="photo">Chỉnh sửa ảnh</a></li>
+          <li class="nav-item"><a class="nav-link" href="#" onclick="switchView('bhxh1lan')" data-view="bhxh1lan">Tính BHXH 1 lần</a></li>
+          <li class="nav-item"><a class="nav-link" href="#" onclick="switchView('huutri')" data-view="huutri">Tính Hưu trí</a></li>
+          <!-- Menu Tra cứu (Mặc định ẩn) -->
+          <li class="nav-item d-none" id="nav-tracuu"><a class="nav-link text-primary fw-bold" href="#" onclick="switchView('tracuu')" data-view="tracuu"><i class="bi bi-search me-1"></i>Tra cứu</a></li>
         </ul>
         <div class="d-flex align-items-center ms-auto">
-          <div id="userActions">
-            <!-- Populated by JS -->
-          </div>
+          <div id="userActions"></div>
         </div>
       </div>
     </div>
   </nav>
 
-  <div class="container mt-4">
-    <div class="px-4 py-5 my-5 text-center">
-      <h1 class="display-5 fw-bold text-body-emphasis">Bộ công cụ trực tuyến</h1>
-      <div class="col-lg-6 mx-auto">
-        <p class="lead mb-4">Chào mừng bạn đến với bộ sưu tập các công cụ hữu ích, miễn phí và hoạt động ngay trên trình duyệt. Chọn một công cụ bên dưới để bắt đầu.</p>
+  <!-- VIEW: HOME -->
+  <div id="view-home" class="view-section">
+    <div class="container mt-4">
+        <div class="px-4 py-5 my-5 text-center">
+        <h1 class="display-5 fw-bold text-body-emphasis">Bộ công cụ trực tuyến</h1>
+        <div class="col-lg-6 mx-auto"><p class="lead mb-4">Chào mừng bạn đến với bộ sưu tập các công cụ hữu ích, miễn phí và hoạt động ngay trên trình duyệt. Chọn một công cụ bên dưới để bắt đầu.</p></div>
+        </div>
+        <div class="row g-4">
+        <div class="col-md-6 col-lg-3"><div class="card h-100 shadow-sm"><div class="card-body d-flex flex-column"><h5 class="card-title"><i class="bi bi-qr-code-scan me-2"></i>Công cụ Mã QR</h5><p class="card-text flex-grow-1">Tạo và đọc mã QR cho văn bản, URL, WiFi, danh thiếp vCard.</p><button onclick="switchView('qrcode')" class="btn btn-primary mt-auto">Sử dụng ngay</button></div></div></div>
+        <div class="col-md-6 col-lg-3"><div class="card h-100 shadow-sm"><div class="card-body d-flex flex-column"><h5 class="card-title"><i class="bi bi-image me-2"></i>Chỉnh sửa ảnh</h5><p class="card-text flex-grow-1">Cắt, xoay, thay đổi kích thước, và làm mờ ảnh trực tuyến.</p><button onclick="switchView('photo')" class="btn btn-primary mt-auto">Sử dụng ngay</button></div></div></div>
+        <div class="col-md-6 col-lg-3"><div class="card h-100 shadow-sm"><div class="card-body d-flex flex-column"><h5 class="card-title"><i class="bi bi-calculator me-2"></i>BHXH 1 lần</h5><p class="card-text flex-grow-1">Ước tính số tiền hưởng bảo hiểm xã hội một lần.</p><button onclick="switchView('bhxh1lan')" class="btn btn-primary mt-auto">Sử dụng ngay</button></div></div></div>
+        <div class="col-md-6 col-lg-3"><div class="card h-100 shadow-sm"><div class="card-body d-flex flex-column"><h5 class="card-title"><i class="bi bi-person-badge me-2"></i>Tính Hưu trí</h5><p class="card-text flex-grow-1">Dự tính mức lương hưu hàng tháng bạn có thể nhận được.</p><button onclick="switchView('huutri')" class="btn btn-primary mt-auto">Sử dụng ngay</button></div></div></div>
+        </div>
+    </div>
+  </div>
+
+  <!-- VIEW: QR CODE -->
+  <div id="view-qrcode" class="view-section hidden">
+    <div class="container mt-4">
+        <div class="qrcode-app-wrapper">
+            <div class="container">
+                <h1 class="display-6 fw-bold">Công cụ Mã QR</h1>
+                <p class="lead text-muted mb-4">Tạo mã QR cho văn bản, URL, WiFi, danh thiếp, hoặc đọc mã QR từ ảnh.</p>
+                <ul class="nav nav-pills mb-3" id="qr-type-pills" role="tablist">
+                    <li class="nav-item"><button class="nav-link active" id="qr-text-tab" data-bs-toggle="pill" data-bs-target="#qr-text-pane" type="button" role="tab" aria-controls="qr-text-pane" aria-selected="true">Văn bản</button></li>
+                    <li class="nav-item"><button class="nav-link" id="qr-url-tab" data-bs-toggle="pill" data-bs-target="#qr-url-pane" type="button" role="tab" aria-controls="qr-url-pane" aria-selected="false">URL</button></li>
+                    <li class="nav-item"><button class="nav-link" id="qr-wifi-tab" data-bs-toggle="pill" data-bs-target="#qr-wifi-pane" type="button" role="tab" aria-controls="qr-wifi-pane" aria-selected="false">WiFi</button></li>
+                    <li class="nav-item"><button class="nav-link" id="qr-vcard-tab" data-bs-toggle="pill" data-bs-target="#qr-vcard-pane" type="button" role="tab" aria-controls="qr-vcard-pane" aria-selected="false">vCard</button></li>
+                    <li class="nav-item"><button class="nav-link" id="qr-read-tab" data-bs-toggle="pill" data-bs-target="#qr-read-pane" type="button" role="tab" aria-controls="qr-read-pane" aria-selected="false">Đọc QR</button></li>
+                </ul>
+                <div class="tab-content" id="qr-pills-content">
+                    <div class="tab-pane fade show active" id="qr-text-pane" role="tabpanel"><label for="qr-text-input" class="form-label">Nhập văn bản:</label><textarea class="form-control" id="qr-text-input" rows="4" placeholder="Xin chào!"></textarea></div>
+                    <div class="tab-pane fade" id="qr-url-pane" role="tabpanel"><label for="qr-url-input" class="form-label">Nhập URL:</label><input type="url" class="form-control" id="qr-url-input" placeholder="https://www.example.com"></div>
+                    <div class="tab-pane fade" id="qr-wifi-pane" role="tabpanel">
+                        <div class="row g-3">
+                            <div class="col-md-6"><label for="qr-wifi-ssid" class="form-label">Tên mạng (SSID)</label><input type="text" class="form-control" id="qr-wifi-ssid"></div>
+                            <div class="col-md-6"><label for="qr-wifi-password" class="form-label">Mật khẩu</label><input type="password" class="form-control" id="qr-wifi-password"></div>
+                            <div class="col-12"><label for="qr-wifi-encryption" class="form-label">Mã hóa</label><select id="qr-wifi-encryption" class="form-select"><option value="WPA" selected>WPA/WPA2</option><option value="WEP">WEP</option><option value="nopass">Không có</option></select></div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="qr-vcard-pane" role="tabpanel">
+                         <div class="row g-3">
+                            <div class="col-md-6"><label for="qr-vcard-name" class="form-label">Họ Tên</label><input type="text" class="form-control" id="qr-vcard-name"></div>
+                            <div class="col-md-6"><label for="qr-vcard-phone" class="form-label">Số ĐT</label><input type="tel" class="form-control" id="qr-vcard-phone"></div>
+                            <div class="col-md-6"><label for="qr-vcard-email" class="form-label">Email</label><input type="email" class="form-control" id="qr-vcard-email"></div>
+                            <div class="col-md-6"><label for="qr-vcard-org" class="form-label">Tổ chức</label><input type="text" class="form-control" id="qr-vcard-org"></div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="qr-read-pane" role="tabpanel">
+                        <div id="qr-reader-uploader"><label for="qr-upload-input" class="upload-label-qr"><div class="upload-label-internal"><i class="bi bi-upload fs-1"></i><span>Nhấp để tải lên hoặc kéo &amp; thả ảnh QR</span></div></label><input type="file" id="qr-upload-input" accept="image/*" class="hidden-input" /></div>
+                        <div id="qr-reader-result-container" style="display: none;"><h4>Nội dung mã QR:</h4><div id="qr-reader-result-text"></div></div>
+                    </div>
+                </div>
+                <div class="text-center mt-4"><button class="btn btn-primary btn-lg" id="generate-btn">Tạo mã QR</button></div>
+                <div id="status-message" class="text-danger text-center mt-2"></div>
+                <div id="qrcode-container"></div>
+            </div>
+        </div>
+    </div>
+  </div>
+
+  <!-- VIEW: PHOTO EDITOR -->
+  <div id="view-photo" class="view-section hidden">
+    <div class="container-fluid mt-3">
+     <div class="hinhanh-app-wrapper">
+       <div class="app-container">
+          <main class="main-content">
+            <div id="uploader" class="uploader-section">
+              <label for="upload-input" class="upload-label"><i class="bi bi-cloud-arrow-up fs-1"></i><span>Nhấp để tải lên hoặc kéo &amp; thả</span></label>
+              <input type="file" id="upload-input" accept="image/*,.heic,.heif" class="hidden" />
+            </div>
+            <div id="editor" class="editor-section hidden">
+              <div class="canvas-container"><canvas id="canvas"></canvas></div>
+              <aside class="controls-panel">
+                <div class="controls-main">
+                  <nav class="tabs">
+                    <button class="tab-btn active" data-tab="resize">Đổi cỡ</button><button class="tab-btn" data-tab="crop">Cắt</button><button class="tab-btn" data-tab="rotate">Xoay</button><button class="tab-btn" data-tab="censor">Làm mờ</button><button class="tab-btn" data-tab="export">Xuất</button>
+                  </nav>
+                  <div id="resize-controls" class="tab-content active"><h3>Đổi kích thước ảnh</h3><div class="control-group"><label for="width-input">Rộng:</label><input type="number" id="width-input" min="1" /></div><div class="control-group"><label for="height-input">Cao:</label><input type="number" id="height-input" min="1" /></div><div class="control-group checkbox-group"><input type="checkbox" id="aspect-ratio-lock" checked><label for="aspect-ratio-lock">Giữ tỷ lệ</label></div><button id="apply-resize-btn" class="action-btn">Áp dụng</button></div>
+                  <div id="crop-controls" class="tab-content"><h3>Cắt ảnh</h3><p class="instructions">Kéo khung trên ảnh để cắt.</p><div class="control-group"><div class="aspect-ratio-presets"><button class="aspect-btn active" data-ratio="free">Tự do</button><button class="aspect-btn" data-ratio="1,1">Vuông</button><button class="aspect-btn" data-ratio="4,3">4:3</button><button class="aspect-btn" data-ratio="16,9">16:9</button></div></div><div class="crop-inputs"><div class="control-group"><label>X:</label><input type="number" id="crop-x" /></div><div class="control-group"><label>Y:</label><input type="number" id="crop-y" /></div><div class="control-group"><label>Rộng:</label><input type="number" id="crop-width" /></div><div class="control-group"><label>Cao:</label><input type="number" id="crop-height" /></div></div><button id="apply-crop-btn" class="action-btn" disabled>Áp dụng cắt</button></div>
+                  <div id="rotate-controls" class="tab-content"><h3>Xoay ảnh</h3><div class="control-group"><label for="rotation-slider"><span>Góc:</span> <span id="rotation-value">0</span>°</label><input type="range" id="rotation-slider" min="-45" max="45" step="1" value="0" style="width: 100%;"></div><div class="control-group-row mt-3"><button id="apply-rotate-btn" class="action-btn">Áp dụng</button><button id="reset-rotate-btn" class="action-btn secondary-style">Reset</button></div><hr style="margin: 1rem 0;"><div class="control-group-row"><button id="rotate-left-btn" class="action-btn secondary-style">Trái 90°</button><button id="rotate-right-btn" class="action-btn secondary-style">Phải 90°</button></div></div>
+                  <div id="censor-controls" class="tab-content"><h3>Che thông tin</h3><p class="instructions">Kéo chuột trên ảnh để chọn vùng.</p><div class="control-group"><label for="pixelate-intensity-slider"><span>Pixel:</span> <span id="pixelate-value">10</span>px</label><input type="range" id="pixelate-intensity-slider" min="4" max="40" step="2" value="10" /></div><button id="apply-censor-btn" class="action-btn" disabled>Áp dụng làm mờ</button></div>
+                  <div id="export-controls" class="tab-content"><h3>Xuất ảnh</h3><div class="control-group"><label for="format-select">Định dạng:</label><select id="format-select"><option value="image/jpeg" selected>JPEG</option><option value="image/png">PNG</option><option value="image/webp">WebP</option></select></div><div class="control-group" id="quality-control"><label for="quality-slider"><span>Chất lượng:</span> <span id="quality-value">1</span></label><input type="range" id="quality-slider" min="0.1" max="1" step="0.05" value="1" /></div><div class="control-group"><p class="file-size-info"><span>Kích thước ước tính:</span> <strong id="estimated-size">...</strong></p></div><button id="download-btn" class="action-btn">Tải ảnh</button></div>
+                </div>
+                <div class="controls-footer"><div class="history-buttons"><button id="undo-btn" class="secondary-btn" disabled>Hoàn tác</button><button id="redo-btn" class="secondary-btn" disabled>Làm lại</button></div><button id="reset-btn" class="reset-btn">Ảnh mới</button></div>
+              </aside>
+            </div>
+          </main>
+       </div>
+     </div>
+    </div>
+  </div>
+
+  <!-- VIEW: BHXH 1 LAN -->
+  <div id="view-bhxh1lan" class="view-section hidden">
+    <div class="container mt-4">
+      <div class="card p-4 p-lg-5 shadow-sm">
+        <div class="text-center mb-4"><h1 class="h2 fw-bold text-success">Tính BHXH một lần</h1><p class="text-muted">Nhập các giai đoạn đóng BHXH để ước tính số tiền.</p></div>
+        <div class="row bg-light rounded-2 py-2 mb-3 d-none d-md-flex"><div class="col-md-4 fw-bold">Giai đoạn</div><div class="col-md-5 fw-bold">Mức lương</div><div class="col-md-3 fw-bold">Đối tượng</div></div>
+        <div id="bhxh-periods-container"></div>
+        <div class="border-top pt-3 mt-3"><div class="d-flex flex-wrap gap-2">
+            <button id="bhxh-add-compulsory-btn" class="btn btn-outline-success"><i class="bi bi-plus-circle me-1"></i>Thêm BHXH bắt buộc</button>
+            <button id="bhxh-add-voluntary-btn" class="btn btn-outline-primary"><i class="bi bi-plus-circle me-1"></i>Thêm BHXH tự nguyện</button>
+            <button id="bhxh-add-maternity-btn" class="btn btn-outline-info"><i class="bi bi-plus-circle me-1"></i>Thêm giai đoạn thai sản</button>
+        </div></div>
+        <div id="bhxh-total-participation-time" class="text-center my-3 fw-bold text-primary"></div>
+        <div class="text-center mt-4"><button id="bhxh-calculate-btn" class="btn btn-success btn-lg px-5"><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span><span class="btn-text">Tính bảo hiểm xã hội</span></button></div>
+        <div id="bhxh-warning-2025" class="alert alert-warning mt-3" style="display: none;"><i class="bi bi-exclamation-triangle-fill me-2"></i><strong>Lưu ý:</strong> Bắt đầu tham gia BHXH từ tháng 07/2025 có thể không được nhận BHXH 1 lần.</div>
+        <div id="bhxh-result-container" class="mt-5" style="display: none;"><h3 class="text-center mb-3">Kết quả ước tính</h3><div class="alert alert-success text-center"><h4 class="alert-heading">Số tiền ước tính</h4><p class="display-5 fw-bold mb-1" id="bhxh-result-amount">0 VNĐ</p><hr><div id="bhxh-result-text" class="mb-0 text-start"></div></div></div>
+        <div id="bhxh-error-container" class="mt-4" style="display: none;"><div class="alert alert-danger"></div></div>
       </div>
     </div>
+  </div>
 
-    <div class="row g-4">
-      <div class="col-md-6 col-lg-3">
-        <div class="card h-100 shadow-sm">
-          <div class="card-body d-flex flex-column">
-            <h5 class="card-title"><i class="bi bi-qr-code-scan me-2"></i>Công cụ Mã QR</h5>
-            <p class="card-text flex-grow-1">Tạo và đọc mã QR cho văn bản, URL, WiFi, danh thiếp vCard một cách nhanh chóng và dễ dàng.</p>
-            <a href="qrcode/index.html" class="btn btn-primary mt-auto">Sử dụng ngay</a>
-          </div>
+  <!-- VIEW: HUU TRI -->
+  <div id="view-huutri" class="view-section hidden">
+    <div class="container mt-4">
+      <div class="card p-4 p-lg-5 shadow-sm">
+        <div class="text-center mb-4"><h1 class="h2 fw-bold text-primary">Tính Lương hưu BHXH</h1><p class="text-muted">Dự tính mức lương hưu hàng tháng.</p></div>
+        <div class="row g-3 mb-4 border-bottom pb-3">
+          <div class="col-md-6"><label for="huu-birth-date-input" class="form-label fw-bold">Ngày sinh</label><input type="text" class="form-control" id="huu-birth-date-input" placeholder="dd/mm/yyyy"></div>
+          <div class="col-md-6"><label class="form-label fw-bold">Giới tính</label><div class="pt-2"><div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="huu-gender-radios" id="huu-gender-male" value="Nam" checked><label class="form-check-label" for="huu-gender-male">Nam</label></div><div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="huu-gender-radios" id="huu-gender-female" value="Nữ"><label class="form-check-label" for="huu-gender-female">Nữ</label></div></div></div>
         </div>
+        <div class="row bg-light rounded-2 py-2 mb-3 d-none d-md-flex"><div class="col-md-5 fw-bold">Giai đoạn</div><div class="col-md-7 fw-bold">Mức lương</div></div>
+        <div id="huu-periods-container"></div>
+        <div class="border-top pt-3 mt-3"><div class="d-flex flex-wrap gap-2">
+            <button id="huu-add-period-btn" class="btn btn-outline-primary"><i class="bi bi-plus-circle me-1"></i>Thêm giai đoạn</button>
+            <button id="huu-add-maternity-btn" class="btn btn-outline-info"><i class="bi bi-plus-circle me-1"></i>Thêm thai sản</button>
+        </div></div>
+        <div id="huu-total-participation-time" class="text-center my-3 fw-bold text-primary"></div>
+        <div class="text-center mt-4"><button id="huu-calculate-btn" class="btn btn-primary btn-lg px-5"><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span><span class="btn-text">Tính lương hưu</span></button></div>
+        <div id="huu-result-container" class="mt-5" style="display: none;"><h3 class="text-center mb-3">Kết quả dự tính</h3><div class="alert alert-primary text-center"><h4 class="alert-heading">Lương hưu hàng tháng</h4><p class="display-5 fw-bold mb-1" id="huu-result-amount">0 VNĐ</p><hr><div id="huu-result-text" class="mb-0 text-start"></div></div></div>
+        <div id="huu-error-container" class="mt-4" style="display: none;"><div class="alert alert-danger"></div></div>
       </div>
-      <div class="col-md-6 col-lg-3">
-        <div class="card h-100 shadow-sm">
-          <div class="card-body d-flex flex-column">
-            <h5 class="card-title"><i class="bi bi-image me-2"></i>Trình Chỉnh sửa ảnh</h5>
-            <p class="card-text flex-grow-1">Thực hiện các thao tác chỉnh sửa ảnh cơ bản như cắt, xoay, thay đổi kích thước, và làm mờ thông tin nhạy cảm.</p>
-            <a href="photo/index.html" class="btn btn-primary mt-auto">Sử dụng ngay</a>
+    </div>
+  </div>
+
+  <!-- VIEW: TRA CUU -->
+  <div id="view-tracuu" class="view-section hidden">
+    <div class="container mt-4">
+      <div class="card p-4 shadow-sm">
+        <h2 class="text-center mb-4 fw-bold text-primary"><i class="bi bi-search me-2"></i>Tra cứu thông tin</h2>
+        <div class="alert alert-info small">Nhập ít nhất một trường thông tin để tra cứu. Kết quả chính xác hơn khi nhập nhiều thông tin.</div>
+        <form id="tracuu-form">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="tracuu-cccd" class="form-label">Số Định danh/CMND</label>
+              <input type="text" class="form-control" id="tracuu-cccd" placeholder="Nhập số CCCD/CMND">
+            </div>
+            <div class="col-md-6">
+              <label for="tracuu-hoten" class="form-label">Họ và Tên</label>
+              <input type="text" class="form-control" id="tracuu-hoten" placeholder="Nhập họ tên đầy đủ">
+            </div>
+            <div class="col-md-6">
+              <label for="tracuu-ngaysinh" class="form-label">Ngày sinh</label>
+              <input type="text" class="form-control" id="tracuu-ngaysinh" placeholder="dd/mm/yyyy" maxlength="10">
+            </div>
+            <div class="col-md-6">
+              <label for="tracuu-bhxh" class="form-label">Mã số BHXH</label>
+              <input type="text" class="form-control" id="tracuu-bhxh" placeholder="Nhập mã số BHXH">
+            </div>
           </div>
-        </div>
-      </div>
-       <div class="col-md-6 col-lg-3">
-        <div class="card h-100 shadow-sm">
-          <div class="card-body d-flex flex-column">
-            <h5 class="card-title"><i class="bi bi-calculator me-2"></i>Công cụ tính BHXH 1 lần</h5>
-            <p class="card-text flex-grow-1">Ước tính số tiền hưởng bảo hiểm xã hội một lần dựa trên quá trình đóng của bạn một cách chính xác.</p>
-            <a href="bhxh1lan/index.html" class="btn btn-primary mt-auto">Sử dụng ngay</a>
+          <div class="text-center mt-4">
+            <button type="submit" class="btn btn-primary px-5" id="tracuu-btn"><i class="bi bi-search"></i> Tìm kiếm</button>
+            <button type="button" class="btn btn-secondary px-4 ms-2" id="tracuu-reset-btn">Làm mới</button>
           </div>
-        </div>
-      </div>
-      <div class="col-md-6 col-lg-3">
-        <div class="card h-100 shadow-sm">
-          <div class="card-body d-flex flex-column">
-            <h5 class="card-title"><i class="bi bi-person-badge me-2"></i>Công cụ tính Hưu trí</h5>
-            <p class="card-text flex-grow-1">Dự tính mức lương hưu hàng tháng bạn có thể nhận được khi đến tuổi nghỉ hưu dựa trên lịch sử đóng BHXH.</p>
-            <a href="huutri/index.html" class="btn btn-primary mt-auto">Sử dụng ngay</a>
+        </form>
+        
+        <div id="tracuu-message" class="mt-3 text-center text-danger"></div>
+
+        <div id="tracuu-results" class="mt-4 hidden">
+          <h4 class="mb-3">Kết quả tra cứu <span class="badge bg-secondary" id="tracuu-count">0</span></h4>
+          <div class="table-responsive">
+            <table class="table table-bordered table-striped table-hover align-middle">
+              <thead class="table-primary text-nowrap" id="tracuu-thead">
+                <!-- Data headers will be populated by JS -->
+              </thead>
+              <tbody id="tracuu-tbody">
+                <!-- Data will be populated here -->
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="assets/script.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qr-creator/dist/qr-creator.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/heic2any/dist/heic2any.min.js"></script>
+  
+  <!-- App Scripts -->
+  <script src="assets/script_chung.js"></script>
+  <script src="assets/script_qr.js"></script>
+  <script src="assets/script_photo.js"></script>
+  <script src="assets/script_1lan.js"></script>
+  <script src="assets/script_huu.js"></script>
+  <script src="assets/script_tracuu.js"></script>
 </body>
 </html>
